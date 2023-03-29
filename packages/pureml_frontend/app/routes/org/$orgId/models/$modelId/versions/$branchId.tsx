@@ -141,12 +141,14 @@ export default function ModelMetrics() {
         // console.log(tt.logs);
       }
     }
-  }, [commonMetrics, dataVersion, ver1, versionData]);
+  }, [versionData]);
+
   // ##### comparing versions #####
   useEffect(() => {
     if (!versionData) return;
 
     const t1 = dataVersion[ver1];
+    setCommonMetrics([]);
     // console.log('t1=', t1);
     if (t1) {
       if (t1.logs === null) {
@@ -192,7 +194,8 @@ export default function ModelMetrics() {
         setVer2Logs(tempDictv2);
       }
     }
-  }, [commonMetrics, dataVersion, ver1, ver2, versionData]);
+  }, [ver2, versionData]);
+  // console.log(ver2, dataVersion[ver2]);
 
   // ##### submit review functionality #####
   useEffect(() => {

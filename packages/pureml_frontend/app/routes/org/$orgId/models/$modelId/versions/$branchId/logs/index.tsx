@@ -16,10 +16,12 @@ export async function loader({ params, request }: any) {
     params.modelId,
     session.get("accessToken")
   );
+  // console.log(params.modelId, params.branchId);
+
   const versions = await fetchModelVersions(
     session.get("orgId"),
     params.modelId,
-    allBranch.at(0).value,
+    params.branchId,
     session.get("accessToken")
   );
   return {
@@ -93,24 +95,28 @@ export default function ModelMetrics() {
         // console.log(tt.logs);
       }
     }
-  }, [ver1, versionData]);
+  }, [versionData]);
   // ##### comparing versions #####
   useEffect(() => {
     if (!versionData) return;
-
     const t1 = dataVersion[ver1];
-    // console.log('t1=', t1);
+    // console.log('tt=', tt);
     if (t1) {
       if (t1.logs === null) {
+        setVer1Logs({});
         setCommonMetrics([]);
+        return;
       } else {
+        const tempDictv1 = {};
         t1.logs.forEach((log: { key: string; data: any }) => {
           if (isJson(log.data)) {
+            tempDictv1[log.key] = JSON.parse(log.data);
             if (!commonMetrics.includes(log.key)) {
               setCommonMetrics((prev) => [...prev, log.key]);
             }
           }
         });
+        setVer1Logs(tempDictv1);
       }
     }
     if (ver2 === "") {
@@ -119,6 +125,7 @@ export default function ModelMetrics() {
 
       return;
     }
+
     const tt = dataVersion[ver2];
     // console.log('tt2=', tt);
     if (tt) {
@@ -144,7 +151,7 @@ export default function ModelMetrics() {
         setVer2Logs(tempDictv2);
       }
     }
-  }, [ver2, versionData]);
+  }, [ver1, ver2, versionData]);
 
   return (
     <Suspense fallback={<Loader />}>
