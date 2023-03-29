@@ -1,9 +1,13 @@
 import { useLoaderData } from "@remix-run/react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useContext, useEffect, useState } from "react";
 import { getSession } from "~/session";
 import Loader from "~/components/ui/Loading";
 import ComparisionTable from "~/components/ComparisionTable";
-import { fetchModelBranch, fetchModelVersions } from "~/routes/api/models.server";
+import {
+  fetchModelBranch,
+  fetchModelVersions,
+} from "~/routes/api/models.server";
+import VersionContext from "../../versionContext";
 
 export async function loader({ params, request }: any) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -36,9 +40,12 @@ function isJson(item: string | object) {
 }
 
 export default function ModelMetrics() {
+  const versionContext = useContext(VersionContext);
+  const ver1 = versionContext.ver1;
+  const ver2 = versionContext.ver2;
   const data = useLoaderData();
-  const [ver1, setVer1] = useState("");
-  const [ver2, setVer2] = useState("");
+  // const [ver1, setVer1] = useState('');
+  // const [ver2, setVer2] = useState('');
   const [dataVersion, setDataVersion] = useState({});
   const [ver1Logs, setVer1Logs] = useState<{ [key: string]: string }>({});
   const [ver2Logs, setVer2Logs] = useState<{ [key: string]: string }>({});
@@ -49,9 +56,10 @@ export default function ModelMetrics() {
   useEffect(() => {
     if (!versionData) return;
     if (!versionData[0]) return;
+    if (!versionContext) return;
 
-    setVer1(versionData.at(0).version);
-    setVer2("");
+    // setVer1(versionContext.ver1);
+    // setVer2('');
   }, [versionData]);
 
   // ##### fetching & displaying latest version data #####

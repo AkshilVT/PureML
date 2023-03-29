@@ -23,6 +23,7 @@ import AvatarIcon from "~/components/ui/Avatar";
 import Select from "~/components/ui/Select";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import { toast } from "react-toastify";
+import VersionContext from "./versionContext";
 
 export async function loader({ params, request }: any) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -233,11 +234,13 @@ export default function ModelMetrics() {
           <div className="flex justify-between h-full">
             <div className="w-4/5">
               <Tabbar intent="modelTab" tab="metrics" />
-              <Outlet />
+              <VersionContext.Provider value={{ ver1, ver2 }}>
+                <Outlet />
+              </VersionContext.Provider>
             </div>
             {/* ##### versions list right sidebar ##### */}
             <aside className="bg-slate-50 border-l-2 border-slate-100 h-full w-1/4 max-w-[400px] py-8 px-12 z-10">
-              {console.log(data.params.branchId)}
+              {/* {console.log(data.params.branchId)} */}
               <Form
                 method="post"
                 onChange={branchChange}
