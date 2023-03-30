@@ -24,6 +24,8 @@ export async function loader({ params, request }: any) {
     params.branchId,
     session.get("accessToken")
   );
+  // console.log(versions);
+
   return {
     versions: versions,
     branches: allBranch,
@@ -54,6 +56,11 @@ export default function ModelMetrics() {
   const [commonMetrics, setCommonMetrics] = useState<string[]>([]);
   const [versionData, setVersionData] = useState(data.versions);
 
+  useEffect(() => {
+    setVersionData(data.versions);
+  }, [data.versions]);
+
+  // console.log(versionData);
   // ##### checking version data #####
   useEffect(() => {
     if (!versionData) return;

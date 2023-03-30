@@ -24,9 +24,12 @@ function ComparisionTable({ metric, ver1, ver2, dataVer1, dataVer2 }: Props) {
     setCommonMetrics(Object.keys(dataVer1));
   }, [dataVer1]);
   useEffect(() => {
-    if (!dataVer1) return;
     if (!dataVer2) return;
-    setCommonMetrics(Object.keys(dataVer1));
+    if (dataVer1) {
+      setCommonMetrics(Object.keys(dataVer1));
+    } else {
+      setCommonMetrics(Object.keys(dataVer2));
+    }
 
     Object.keys(dataVer2).forEach((key) => {
       if (!commonMetrics.includes(key)) {
@@ -51,7 +54,7 @@ function ComparisionTable({ metric, ver1, ver2, dataVer1, dataVer2 }: Props) {
 
       {open && (
         <div className="py-6">
-          {commonMetrics.length !== 0 && dataVer1 !== null ? (
+          {commonMetrics.length !== 0 ? (
             <>
               <table className="max-w-[1000px] w-full">
                 {commonMetrics.length !== 0 && (

@@ -57,6 +57,8 @@ export async function action({ params, request }: any) {
       branch,
       session.get("accessToken")
     );
+    // console.log(branch);
+
     return { _action: "changeBranch", versions: versions };
     // return redirect(`../versions/logs/${branch}`);
   } else if (option._action === "submitReview") {
