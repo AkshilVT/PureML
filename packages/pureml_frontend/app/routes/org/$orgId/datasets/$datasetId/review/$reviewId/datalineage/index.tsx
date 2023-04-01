@@ -12,7 +12,7 @@ import ReviewTabbar from "~/components/ReviewTabbar";
 import Tabbar from "~/components/Tabbar";
 import Loader from "~/components/ui/Loading";
 import { edgesSchema, nodesSchema, versionDataSchema } from "~/lib.schema";
-import Pipeline from "../../../versions/Pipeline";
+import Pipeline from "../../../versions/$branchId/Pipeline";
 import AvatarIcon from "~/components/ui/Avatar";
 import { getSession } from "~/session";
 import {
