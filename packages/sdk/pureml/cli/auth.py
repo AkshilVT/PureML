@@ -6,7 +6,7 @@ import requests
 import typer
 from rich import print
 from rich.syntax import Syntax
-
+from .orgs import get_org_table
 from pureml.components import get_org_id, get_token
 from rich.console import Console
 from rich.table import Table
@@ -157,9 +157,11 @@ def login():
         access_token = token["accessToken"]
         email = token["email"]
 
-        list_org(access_token=access_token)
+        
+        org_id = get_org_table(access_token)
+        # list_org(access_token=access_token)
 
-        org_id = check_org_status(access_token=access_token)
+        # org_id = check_org_status(access_token=access_token)
 
         if org_id is not None:
 
