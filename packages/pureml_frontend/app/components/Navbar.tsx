@@ -108,13 +108,13 @@ export default function NavBar(props: Props) {
             </a>
           </li>
           <li className="flex items-center">
-            <a href="https://docs.pureml.com" className="w-max">
+            <a href="https://pureml.mintlify.app" className="w-max">
               Docs
             </a>
           </li>
           {props.intent === "loggedOut" ? (
             <li className="flex">
-              <div className="w-full flex justify-center items-center px-5">
+              <div className="w-full flex justify-center items-center px-5 font-medium text-slate-500">
                 <a href="/auth/signin" className="w-max">
                   Sign in
                 </a>
@@ -216,7 +216,7 @@ export default function NavBar(props: Props) {
           </li>
 
           <a
-            href="https://docs.pureml.com"
+            href="https://pureml.mintlify.app"
             className="flex justify-center items-center cursor-pointer px-5 hover:text-brand-200 border-r-2 border-slate-slate-200 font-medium text-slate-500"
           >
             <File className="w-4 h-4" />
@@ -224,7 +224,7 @@ export default function NavBar(props: Props) {
           </a>
           {props.intent === "loggedOut" ? (
             <li className="flex">
-              <div className="w-full flex justify-center items-center px-5">
+              <div className="w-full flex justify-center items-center px-5 font-medium text-slate-500">
                 <a href="/auth/signin" className="w-max">
                   Sign in
                 </a>

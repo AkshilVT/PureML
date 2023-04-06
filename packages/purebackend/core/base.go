@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	commonmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/models"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/config"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/daos"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/settings"
@@ -122,8 +124,24 @@ func (app *BaseApp) Bootstrap() error {
 		return err
 	}
 
+	if err := app.Dao().Datastore().SeedAdminIfNotExists(); err != nil {
+		return err
+	}
+
 	if app.settings.Search.Enabled {
 		app.Dao().Datastore().SeedSearchClient()
+	}
+
+	if app.settings.S3.Enabled {
+		if err := app.Dao().Datastore().SeedAdminS3SecretsIfNotExists(&app.settings.S3); err != nil {
+			return err
+		}
+	}
+
+	if app.settings.R2.Enabled {
+		if err := app.Dao().Datastore().SeedAdminR2SecretsIfNotExists(&app.settings.R2); err != nil {
+			return err
+		}
 	}
 
 	// app.RefreshSettings()
@@ -180,13 +198,14 @@ func (app *BaseApp) Settings() *settings.Settings {
 	return app.settings
 }
 
-// NewFilesystem creates a new local or S3 filesystem instance
+// NewFilesystem creates a new local or Object storage filesystem instance
 // based on the current app settings.
 //
 // NB! Make sure to call `Close()` on the returned result
 // after you are done working with it.
-func (app *BaseApp) NewFilesystem() (*filesystem.System, error) {
-	if app.settings.S3.Enabled {
+func (app *BaseApp) NewFilesystem(sourceSecrets *commonmodels.SourceSecrets) (*filesystem.System, error) {
+	switch strings.ToUpper(sourceSecrets.SourceType) {
+	case "S3":
 		return filesystem.NewS3(
 			app.settings.S3.Bucket,
 			app.settings.S3.Region,
@@ -195,8 +214,7 @@ func (app *BaseApp) NewFilesystem() (*filesystem.System, error) {
 			app.settings.S3.Secret,
 			app.settings.S3.ForcePathStyle,
 		)
-	}
-	if app.settings.R2.Enabled {
+	case "R2":
 		return filesystem.NewR2(
 			app.settings.R2.AccountId,
 			app.settings.R2.Bucket,
@@ -205,15 +223,15 @@ func (app *BaseApp) NewFilesystem() (*filesystem.System, error) {
 			app.settings.R2.Secret,
 			app.settings.R2.ForcePathStyle,
 		)
+	default:
+		// fallback to local filesystem
+		return filesystem.NewLocal(filepath.Join(app.DataDir(), "storage"))
 	}
-
-	// fallback to local filesystem
-	return filesystem.NewLocal(filepath.Join(app.DataDir(), "storage"))
 }
 
 // UploadFile uploads a file to the app storage.
-func (app *BaseApp) UploadFile(file *filesystem.File, basePath string) (string, error) {
-	fs, err := app.NewFilesystem()
+func (app *BaseApp) UploadFile(file *filesystem.File, basePath string, sourceSecrets *commonmodels.SourceSecrets) (string, error) {
+	fs, err := app.NewFilesystem(sourceSecrets)
 	if err != nil {
 		return "", err
 	}

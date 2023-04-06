@@ -3,6 +3,10 @@ from pureml.utils.pipeline import add_dataset_to_config
 from pureml.lineage.data.create_lineage import create_lineage
 from pureml.utils.version_utils import parse_version_label
 import functools
+from pureml.utils.config import reset_config
+from pureml.schema import ConfigKeys
+
+config_keys = ConfigKeys
 
 
 def dataset(label: str, parent: str = None, upload=False):
@@ -45,8 +49,17 @@ def dataset(label: str, parent: str = None, upload=False):
             # if dataset_exists_in_remote:
             #     add_dataset_to_config(name=name, branch=branch, hash=dataset_hash, version=dataset_version, parent=parent, func=func)
             add_dataset_to_config(
-                name=name, branch=branch, hash=dataset_hash, parent=parent, func=func
+                name=name,
+                branch=branch,
+                description=func_description,
+                hash=dataset_hash,
+                parent=parent,
+                func=func,
             )
+
+            reset_config(key=config_keys.load_data.value)
+            reset_config(key=config_keys.transformer.value)
+            reset_config(key=config_keys.dataset.value)
 
             return func_output
 

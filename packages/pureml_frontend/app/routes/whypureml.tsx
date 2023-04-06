@@ -46,7 +46,7 @@ export default function WhyPureML() {
             <div className="flex flex-col gap-y-12 md:gap-y-24">
               <div className="flex flex-col md:flex-row gap-y-4 gap-x-16">
                 <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-1/2">
-                  <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+                  <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                     Object based semantic versioning for data and models:
                   </span>
                   <br />
@@ -62,7 +62,7 @@ export default function WhyPureML() {
               </div>
               <div className="flex flex-col md:flex-row gap-y-4 gap-x-16">
                 <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-1/2">
-                  <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+                  <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                     In-code orchestration:
                   </span>
                   <br />
@@ -106,7 +106,7 @@ def train_model():
               </div>
               <div className="flex flex-col md:flex-row gap-y-4 gap-x-16">
                 <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-1/2">
-                  <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+                  <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                     ML Evaluation:
                   </span>
                   <br />
@@ -127,7 +127,7 @@ def train_model():
               Standout features
             </h1>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Version Control:
               </span>
               <br />
@@ -136,7 +136,7 @@ def train_model():
               throughout the development process.
             </div>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Commit Process:
               </span>
               <br />
@@ -145,7 +145,7 @@ def train_model():
               shipped to your customers.
             </div>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Packaging:
               </span>
               <br />
@@ -155,7 +155,7 @@ def train_model():
               specific needs.
             </div>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Data Lineage:
               </span>
               <br />
@@ -164,7 +164,7 @@ def train_model():
               development or deployment.
             </div>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Branches:
               </span>
               <br />
@@ -173,7 +173,7 @@ def train_model():
               simultaneously.
             </div>
             <div className="text-lg md:text-xl lg:text-3xl text-justify md:w-4/5">
-              <span className="font-medium text-slate-800 text-lg md:text-xl lg:text-3xl">
+              <span className="font-medium text-slate-950 text-lg md:text-xl lg:text-3xl">
                 Testing:
               </span>
               <br />

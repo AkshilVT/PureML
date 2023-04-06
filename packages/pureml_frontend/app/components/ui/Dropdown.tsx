@@ -72,14 +72,14 @@ export default function Dropdown(props: Props) {
             >
               Settings
             </DropdownMenu.Item>
-            <DropdownMenu.Item
+            {/* <DropdownMenu.Item
               className={items()}
               onClick={() => {
                 navigate(`/contact`);
               }}
             >
               Contact Us
-            </DropdownMenu.Item>
+            </DropdownMenu.Item> */}
             <DropdownMenu.Separator className="h-px bg-slate-200" />
             <DropdownMenu.Item
               className={items()}

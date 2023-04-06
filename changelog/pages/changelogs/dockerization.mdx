@@ -1,0 +1,24 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "dockerization",
+  publishedAt: "2023-02-17T09:00:00.000Z",
+  title: "Dockerization of backend",
+  headerImage: "/changelogs/docker.png",
+  authors: [],
+};
+
+**New**
+
+- Successfully dockerized backend and deployed
+- Package updates completed
+
+**Fixes**
+
+- Remove Org member, Add user to Org APIs
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

@@ -1,0 +1,27 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "detailed-lineage-nodes",
+  publishedAt: "2023-03-25T09:00:00.000Z",
+  title: "Detailed data lineage nodes",
+  headerImage: "/changelogs/lineagenodes.png",
+  authors: [],
+};
+
+**New**
+
+- Detailed nodes of data lineage for datasets
+
+**Updated**
+
+- Design of data lineage edges
+
+**Fixes**
+
+- Removed extra empty space and height issue of version pages of models & datasets
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

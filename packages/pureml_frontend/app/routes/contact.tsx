@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import {
   Form,
-  Meta,
   useActionData,
   useLoaderData,
   useNavigate,
@@ -13,7 +11,7 @@ import { toast } from "react-toastify";
 import Navbar from "~/components/Navbar";
 import Button from "~/components/ui/Button";
 import { getSession } from "~/session";
-import base, { fetchUserSettings } from "./api/auth.server";
+import { fetchUserSettings } from "./api/auth.server";
 import { fetchOrgDetails } from "./api/org.server";
 
 export const meta: MetaFunction = () => ({
@@ -41,21 +39,21 @@ export const action = async ({ request }: any) => {
   const accessToken = session.get("accessToken");
   const userDetails = await fetchUserSettings(accessToken);
   const email = userDetails[0].email;
-  const submit = base("tbl7qXTTBN3Ln6KyE").create(
-    [
-      {
-        fields: {
-          Email: email,
-          Comment: comment,
-        },
-      },
-    ],
-    (err: string) => {
-      if (err) {
-        console.error(err);
-      }
-    }
-  );
+  // const submit = base("tbl7qXTTBN3Ln6KyE").create(
+  //   [
+  //     {
+  //       fields: {
+  //         Email: email,
+  //         Comment: comment,
+  //       },
+  //     },
+  //   ],
+  //   (err: string) => {
+  //     if (err) {
+  //       console.error(err);
+  //     }
+  //   }
+  // );
   return redirect("/models", {});
 };
 

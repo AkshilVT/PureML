@@ -23,7 +23,6 @@ import PackageSection from "./components/landingPage/PackageSection";
 import { fetchUserSettings } from "./routes/api/auth.server";
 import { destroySession, getSession } from "./session";
 import * as gtag from "~/analytics/gtags.client";
-import { Analytics } from "@vercel/analytics/react";
 
 // Tailwind CSS---------------------------------------------------------------
 import styles from "./styles/app.css";
@@ -36,6 +35,7 @@ import VersionSection from "./components/landingPage/VersionSection";
 import ReviewSection from "./components/landingPage/ReviewSection";
 import TestingSection from "./components/landingPage/TestingSection";
 import DeploySection from "./components/landingPage/DeploySection";
+import posthog from "posthog-js";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -50,7 +50,11 @@ export const links: LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500&display=swap",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://api.fontshare.com/v2/css?f[]=satoshi@500,400&display=swap",
   },
 ];
 // ---------------------------------------------------------------------------
@@ -97,6 +101,12 @@ export default function App() {
   const pathname = matches[1].pathname;
   const profile = useLoaderData();
   const { prof, gaTrackingId } = useLoaderData();
+  useEffect(() => {
+    posthog.init("phc_u5aRMx559YsrAaBkCIWGoxEXepwpQBxvhUncdb9giP5", {
+      api_host: "https://app.posthog.com",
+    });
+  });
+
   useEffect(() => {
     if (profile.profile && pathname === "/") return navigate("/models");
   }, [profile]);
@@ -202,7 +212,6 @@ function Document({
         <Links />
       </head>
       <body>
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
         {!gaTrackingId ? null : (
           <>
             <script
@@ -226,7 +235,6 @@ function Document({
           </>
         )}
         <Scripts />
-        <Analytics />
         <div className="bg-slate-50">{children}</div>
         <ScrollRestoration />
         <LiveReload />

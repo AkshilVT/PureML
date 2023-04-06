@@ -3,6 +3,7 @@ package seeds
 import (
 	"fmt"
 
+	authdbmodels "github.com/PureMLHQ/PureML/packages/purebackend/auth/dbmodels"
 	commondbmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/dbmodels"
 	datasetdbmodels "github.com/PureMLHQ/PureML/packages/purebackend/dataset/dbmodels"
 	modeldbmodels "github.com/PureMLHQ/PureML/packages/purebackend/model/dbmodels"
@@ -51,6 +52,12 @@ func All() []Seed {
 			Name: "CreateDemoPrivateDataset",
 			Run: func(d *gorm.DB) error {
 				return CreateDataset(d, defaultUUID2, "Demo Private Dataset", "Demo Private Dataset Wiki", false)
+			},
+		},
+		{
+			Name: "CreateDemoSession",
+			Run: func(d *gorm.DB) error {
+				return CreateSession(d, defaultUUID, defaultUUID, "device", "123456", "India")
 			},
 		},
 	}
@@ -277,6 +284,26 @@ func CreateDataset(db *gorm.DB, uuid uuid.UUID, name string, wiki string, isPubl
 		return err
 	}
 	err = db.Table("dataset_users").Where("user_uuid = ?", defaultUUID).Where("dataset_uuid =  ?", uuid).Update("role", "owner").Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateSession(db *gorm.DB, uuid uuid.UUID, userUUID uuid.UUID, device string, deviceId string, deviceLocation string) error {
+	err := db.Create(&authdbmodels.Session{
+		BaseModel: commondbmodels.BaseModel{
+			UUID: uuid,
+		},
+		User: userorgdbmodels.User{
+			BaseModel: commondbmodels.BaseModel{
+				UUID: userUUID,
+			},
+		},
+		Device:         device,
+		DeviceId:       deviceId,
+		DeviceLocation: deviceLocation,
+	}).Error
 	if err != nil {
 		return err
 	}

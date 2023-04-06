@@ -1,0 +1,25 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "review-feature",
+  publishedAt: "2023-03-24T09:00:00.000Z",
+  title: "Review models & datasets",
+  headerImage: "/changelogs/Review.gif",
+  authors: [],
+};
+
+**New**
+
+- Review feature added to models
+- Review feature added to datasets
+  Users can now send their model versions and dataset versions for review to merge in production (main) branch in easy steps:
+  1. Create/Modify your own version in your custom branch.
+  2. Submit for review by clicking the more option in front of that version
+  3. Wait for owner to approve to request.
+  4. Verify 'New Commits', 'Approved' and 'Rejected' commit requests under Review tab of each model.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

@@ -1,0 +1,26 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "new-landing-page",
+  publishedAt: "2023-03-09T09:00:00.000Z",
+  title: "New landing page is out",
+  headerImage: "/changelogs/landingpg.png",
+  authors: [],
+};
+
+**New**
+
+- landing page to explain the clear vision
+  - List of all Trusted companies using our product
+  - PureML-version
+  - PureML-eval
+  - Review
+  - PureML-package
+  - PureML-deploy
+- Waitlist option for companies or teams to experience the product
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

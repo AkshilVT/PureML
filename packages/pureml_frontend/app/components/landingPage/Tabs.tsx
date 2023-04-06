@@ -52,7 +52,7 @@ function LandingPgTab(props: Props) {
       }}
       activeControlProps={{
         className: "active",
-        style: { color: "#1E293B" },
+        style: { color: "#020617" },
       }}
     >
       <div className="pt-6">{props.tab1Content}</div>

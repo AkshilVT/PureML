@@ -1,12 +1,36 @@
 import Airtable from "airtable";
+import { Client } from "@notionhq/client";
 
 // ############################## contactus api ##############################
-const base = new Airtable({
-  endpointUrl: "https://api.airtable.com",
-  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY,
-}).base("appAR7Cxhflh7YVe9");
+// const base = new Airtable({
+//   endpointUrl: "https://api.airtable.com",
+//   apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY,
+// }).base("appAR7Cxhflh7YVe9");
 
-export default base;
+// export default base;
+
+// ############################## ml tools ##############################
+
+export async function fetchMLTools() {
+  const notionSecret = process.env.NOTION_SECRET;
+  const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+
+  const notion = new Client({ auth: notionSecret });
+  if (!notionSecret || !notionDatabaseId) {
+    return null;
+  }
+
+  const res = await notion.databases.query({
+    database_id: notionDatabaseId,
+    sorts: [
+      {
+        property: "Name",
+        direction: "ascending",
+      },
+    ],
+  });
+  return res.results;
+}
 
 // ###########################################################################
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -67,6 +91,25 @@ export async function fetchVerifyEmail(token: string | undefined) {
     },
     body: JSON.stringify({
       token: token,
+    }),
+  }).then((res) => res.json());
+  return res;
+}
+
+export async function fetchVerifySession(
+  accessToken: string,
+  sessionId: string
+) {
+  const url = makeUrl(`user/verify-session`);
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application / json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      session_id: sessionId,
     }),
   }).then((res) => res.json());
   return res;

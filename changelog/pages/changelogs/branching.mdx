@@ -1,0 +1,19 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "branching",
+  publishedAt: "2023-04-04T09:00:00.000Z",
+  title: "Easy sharing and accessing different branches of models & datasets",
+  headerImage: "/changelogs/branching.png",
+  authors: [],
+};
+
+**New**
+
+- Redirections to different branches now available for models & datasets to share and quick access.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

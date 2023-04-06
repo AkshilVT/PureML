@@ -5,6 +5,7 @@ import (
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/settings"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/tools/filesystem"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/tools/search"
+	commonmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/models"
 )
 
 // App defines the main PureBackend app interface.
@@ -30,10 +31,10 @@ type App interface {
 	//
 	// NB! Make sure to call `Close()` on the returned result
 	// after you are done working with it.
-	NewFilesystem() (*filesystem.System, error)
+	NewFilesystem(sourceSecrets *commonmodels.SourceSecrets) (*filesystem.System, error)
 
 	// UploadFile uploads a file to the app storage.
-	UploadFile(file *filesystem.File, basePath string) (string, error)
+	UploadFile(file *filesystem.File, basePath string, sourceSecrets *commonmodels.SourceSecrets) (string, error)
 
 	// NewSearchClient creates and returns a configured search.SearchClient instance.
 	NewSearchClient() *search.SearchClient

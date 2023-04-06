@@ -10,7 +10,7 @@ export default function TestingSection() {
       <div className="flex flex-col gap-y-12 text-slate-600">
         <div className="flex flex-col gap-y-12">
           <div className="flex flex-col gap-y-6 md:w-3/4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl pb-2">
+            <h1 className="font-medium text-3xl md:text-4xl lg:text-5xl pb-2">
               PureML-eval : Testing & Quality Control
             </h1>
           </div>
@@ -44,7 +44,7 @@ export default function TestingSection() {
           </div>
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-6">
             <div className="md:w-1/2 flex flex-col gap-y-4">
-              <h2 className="text-lg md:text-xl lg:text-3xl text-slate-800">
+              <h2 className="font-medium text-lg md:text-xl lg:text-3xl text-slate-950">
                 Step a.1: Use an existing model for validation
               </h2>
               <div className="codeblock w-[92vw] md:w-[43vw] lg:w-full overflow-hidden md:overflow-visible">
@@ -71,7 +71,7 @@ pureml.dataset.validation(“petdata:dev:v1”)`}
               </h2>
             </div>
             <div className="md:w-1/2 flex flex-col gap-y-4">
-              <h2 className="text-lg md:text-xl lg:text-3xl text-slate-800">
+              <h2 className="font-medium text-lg md:text-xl lg:text-3xl text-slate-950">
                 Step a.2: Register validation dataset
               </h2>
               <div className="codeblock w-[92vw] md:w-[43vw] lg:w-full overflow-hidden md:overflow-visible">
@@ -124,7 +124,7 @@ def load_data(img_folder = "PetImages"):
           </div>
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-6">
             <div className="md:w-1/2 flex flex-col gap-y-4">
-              <h2 className="text-lg md:text-xl lg:text-3xl text-slate-800">
+              <h2 className="font-medium text-lg md:text-xl lg:text-3xl text-slate-950">
                 Step b: Predictor for model
               </h2>
               <h2 className="text-lg md:text-xl lg:text-2xl">
@@ -176,7 +176,7 @@ class Predictor(BasePredictor):
           </div>
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-6">
             <div className="md:w-1/2 flex flex-col gap-y-4">
-              <h2 className="text-lg md:text-xl lg:text-3xl text-slate-800">
+              <h2 className="font-medium text-lg md:text-xl lg:text-3xl text-slate-950">
                 Step c: Evaluating your model is done as follows
               </h2>
             </div>

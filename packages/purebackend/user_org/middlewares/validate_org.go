@@ -51,6 +51,26 @@ func ValidateOrg(app core.App) echo.MiddlewareFunc {
 				}
 				return nil
 			}
+			userUUID := context.Get("User").(*userorgmodels.UserClaims).UUID
+			if userUUID != uuid.Nil {
+				res, err := app.Dao().GetUserOrganizationByOrgIdAndUserUUID(orgUUID, userUUID)
+				if err != nil {
+					context.Response().WriteHeader(http.StatusInternalServerError)
+					_, err = context.Response().Writer.Write([]byte(err.Error()))
+					if err != nil {
+						return err
+					}
+					return nil
+				}
+				if res == nil {
+					context.Response().WriteHeader(http.StatusForbidden)
+					_, err = context.Response().Writer.Write([]byte("You are not a member of this organization"))
+					if err != nil {
+						return err
+					}
+					return nil
+				}
+			}
 			context.Set(ContextOrgKey, &userorgmodels.OrganizationHandleResponse{
 				Name:        org.Name,
 				UUID:        org.UUID,

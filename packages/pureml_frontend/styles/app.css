@@ -236,8 +236,8 @@ input[type="text"]:focus,
 }
 
 @layer components {
-  .font-spacegrotesk {
-    font-family: "Space Grotesk", sans-serif;
+  .font-satoshi {
+    font-family: "Satoshi", sans-serif;
   }
 }
 
@@ -252,7 +252,7 @@ input[type="text"]:focus,
 .landingpg-font h2,
 .landingpg-font h1,
 .landingpg-font span {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Satoshi", sans-serif;
 }
 
 .landingpg-font p {

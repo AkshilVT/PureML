@@ -7,7 +7,7 @@ export default function HeroSection() {
             <div className="flex flex-col gap-y-4">
               <h1 className="font-medium !leading-snug text-4xl md:text-5xl lg:text-6xl">
                 The next-gen developer platform for{" "}
-                <u className="underline underline-offset-8 font-medium !leading-snug text-4xl md:text-5xl lg:text-6xl font-spacegrotesk">
+                <u className="underline underline-offset-8 font-medium !leading-snug text-4xl md:text-5xl lg:text-6xl font-satoshi">
                   Production ML
                 </u>
                 .

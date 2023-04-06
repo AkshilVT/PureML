@@ -1,0 +1,33 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "orgname",
+  publishedAt: "2023-02-07T09:00:00.000Z",
+  title: "Visible org name",
+  headerImage: "/changelogs/orgname.png",
+  authors: [],
+};
+
+**Updated**
+
+- Org Name in breadcrumbs replacing org Id
+- Datasets & models version list displayed in descending order
+
+**Fixed**
+
+- Minor bugs for datasets & models comparison
+- Minor UI
+- Dropdown now looks better
+- Alignment issues
+- Minor bug fixes for parameters in model comparison
+- UI changes
+
+**Removed**
+
+- Projects entity removed and added functionality to models and datasets.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

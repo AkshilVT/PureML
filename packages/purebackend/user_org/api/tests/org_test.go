@@ -500,7 +500,7 @@ func TestUpdateOrg(t *testing.T) {
 			}`),
 			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
 				// Change role to member
-				err := app.Dao().ExecuteSQL(fmt.Sprintf("UPDATE user_organizations SET role = '%s' WHERE user_uuid = '%s' AND organization_uuid = '%s'", "member", "11111111-1111-1111-1111-111111111111", "11111111-1111-1111-1111-111111111111"))
+				err := app.Dao().ExecuteSQL(fmt.Sprintf("UPDATE user_organizations SET role = '%s' WHERE user_uuid = '%s' AND organization_uuid = '%s'", "member", test.ValidAdminUserOrgUuid.String(), test.ValidAdminUserOrgUuid.String()))
 				if err != nil {
 					t.Fatal(err)
 				}

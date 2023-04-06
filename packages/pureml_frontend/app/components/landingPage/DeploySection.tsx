@@ -9,7 +9,7 @@ export default function DeploySection() {
       <div className="flex flex-col gap-y-12 text-slate-600">
         <div className="flex flex-col gap-y-6">
           <div className="md:w-3/4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl pb-2">
+            <h1 className="font-medium text-3xl md:text-4xl lg:text-5xl pb-2">
               PureML-deploy
             </h1>
             <h2 className="text-lg md:text-xl lg:text-3xl">

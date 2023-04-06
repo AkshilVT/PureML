@@ -1,0 +1,24 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "ml-tools",
+  publishedAt: "2023-03-23T09:00:00.000Z",
+  title: "New ML Tools page is out",
+  headerImage: "/changelogs/mltoolspg.png",
+  authors: [],
+};
+
+**New**
+
+- ML Tools page
+
+**Updated**
+
+- Centered the hero section content
+- Updated footer design
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

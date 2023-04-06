@@ -3,15 +3,20 @@ package impl
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	authdbmodels "github.com/PureMLHQ/PureML/packages/purebackend/auth/dbmodels"
+	authmodels "github.com/PureMLHQ/PureML/packages/purebackend/auth/models"
 	commondbmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/dbmodels"
 	commonmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/models"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/config"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/dbmodels"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/models"
+	"github.com/PureMLHQ/PureML/packages/purebackend/core/settings"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/tools/search"
 	datasetdbmodels "github.com/PureMLHQ/PureML/packages/purebackend/dataset/dbmodels"
 	datasetmodels "github.com/PureMLHQ/PureML/packages/purebackend/dataset/models"
@@ -26,7 +31,20 @@ import (
 	cgosqlite "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 )
+
+var gormConfig = &gorm.Config{
+	Logger: logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second * 2, // Slow SQL threshold
+			LogLevel:                  logger.Error,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
+		},
+	),
+}
 
 func NewSQLiteDatastore(optDataDir ...string) *Datastore {
 	var dialector gorm.Dialector
@@ -44,7 +62,7 @@ func NewSQLiteDatastore(optDataDir ...string) *Datastore {
 	} else {
 		dialector = puregosqlite.Open(databasePath)
 	}
-	db, err := gorm.Open(dialector, &gorm.Config{})
+	db, err := gorm.Open(dialector, gormConfig)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error connecting to database")
@@ -66,12 +84,12 @@ func NewSQLiteDatastore(optDataDir ...string) *Datastore {
 		modeldbmodels.ModelUser{},
 		modeldbmodels.ModelVersion{},
 		userorgdbmodels.Organization{},
-		userorgdbmodels.Path{},
 		userorgdbmodels.User{},
 		userorgdbmodels.UserOrganizations{},
 		userorgdbmodels.Secret{},
 		commondbmodels.Readme{},
 		commondbmodels.ReadmeVersion{},
+		authdbmodels.Session{},
 	)
 	if err != nil {
 		return &Datastore{}
@@ -84,7 +102,7 @@ func NewSQLiteDatastore(optDataDir ...string) *Datastore {
 func NewPostgresDatastore(databaseUrl string) *Datastore {
 	dsn := databaseUrl
 	// fmt.Println(dsn)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error connecting to database")
@@ -106,12 +124,12 @@ func NewPostgresDatastore(databaseUrl string) *Datastore {
 		modeldbmodels.ModelUser{},
 		modeldbmodels.ModelVersion{},
 		userorgdbmodels.Organization{},
-		userorgdbmodels.Path{},
 		userorgdbmodels.User{},
 		userorgdbmodels.UserOrganizations{},
 		userorgdbmodels.Secret{},
 		commondbmodels.Readme{},
 		commondbmodels.ReadmeVersion{},
+		authdbmodels.Session{},
 	)
 	if err != nil {
 		return &Datastore{}
@@ -246,11 +264,20 @@ func (ds *Datastore) SeedSearchClient() {
 	}
 }
 
-func (ds *Datastore) SeedAdminIfNotExists() {
+func (ds *Datastore) SeedAdminIfNotExists() error {
 	var user userorgdbmodels.User
 	adminDetails := config.GetAdminDetails()
 	if adminDetails == nil {
-		return
+		// return errors.New("admin details not found in env vars")
+		// fmt.Println("admin details not found in env vars. using default values")
+		adminDetails = map[string]interface{}{
+			"uuid":       uuid.Must(uuid.FromString("99999999-9999-9999-9999-999999999999")),
+			"email":      "admin@admin.com",
+			"password":   "admin",
+			"handle":     "admin",
+			"org_name":   "admin-org",
+			"org_handle": "adminorg",
+		}
 	}
 	err := ds.DB.Where("uuid = ?", adminDetails["uuid"]).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
@@ -282,6 +309,31 @@ func (ds *Datastore) SeedAdminIfNotExists() {
 	} else if err != nil {
 		fmt.Println(err)
 	}
+	return nil
+}
+
+func (ds *Datastore) SeedAdminS3SecretsIfNotExists(s3config *settings.S3Config) error {
+	adminDetails := config.GetAdminDetails()
+	if adminDetails == nil {
+		return errors.New("admin details not found in env vars")
+	}
+	if _, err := ds.CreateS3Secrets(adminDetails["uuid"].(uuid.UUID), "admin", s3config.AccessKey, s3config.Secret, s3config.Bucket, s3config.Region); err != nil {
+		// secrets already exist
+		return nil
+	}
+	return nil
+}
+
+func (ds *Datastore) SeedAdminR2SecretsIfNotExists(r2config *settings.R2Config) error {
+	adminDetails := config.GetAdminDetails()
+	if adminDetails == nil {
+		return errors.New("admin details not found in env vars")
+	}
+	if _, err := ds.CreateR2Secrets(adminDetails["uuid"].(uuid.UUID), "admin", r2config.AccountId, r2config.AccessKey, r2config.Secret, r2config.Bucket, r2config.Endpoint); err != nil {
+		// secrets already exist
+		return nil
+	}
+	return nil
 }
 
 type Datastore struct {
@@ -978,6 +1030,85 @@ func (ds *Datastore) UpdateUserPassword(userUUID uuid.UUID, hashedPassword strin
 	return nil
 }
 
+/////////////////////////////// CLI SESSION METHODS /////////////////////////////////
+
+func (ds *Datastore) GetSession(sessionUUID uuid.UUID) (*authmodels.SessionResponse, error) {
+	session := &authdbmodels.Session{
+		BaseModel: commondbmodels.BaseModel{
+			UUID: sessionUUID,
+		},
+	}
+	err := ds.DB.Model(&session).Preload("User").First(&session).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &authmodels.SessionResponse{
+		SessionUUID:    session.UUID,
+		Device:         session.Device,
+		DeviceId:       session.DeviceId,
+		DeviceLocation: session.DeviceLocation,
+		UserUUID:       session.User.UUID,
+		Approved:       session.Approved,
+		Invalid:        session.Invalid,
+		CreatedAt:      session.CreatedAt,
+	}, nil
+}
+
+func (ds *Datastore) CreateSession(deviceData string, deviceId string, deviceLocation string) (*authmodels.CreateSessionResponse, error) {
+	session := authdbmodels.Session{
+		Device:         deviceData,
+		DeviceId:       deviceId,
+		DeviceLocation: deviceLocation,
+	}
+	err := ds.DB.Create(&session).Error
+	if err != nil {
+		return nil, err
+	}
+	return &authmodels.CreateSessionResponse{
+		SessionUUID: session.UUID,
+		CreatedAt:   session.CreatedAt,
+	}, nil
+}
+
+func (ds *Datastore) UpdateSession(sessionUUID uuid.UUID, userUUID uuid.UUID, updatedAttributes map[string]interface{}) (*authmodels.SessionResponse, error) {
+	var session authdbmodels.Session
+	result := ds.DB.Where("uuid = ?", sessionUUID).First(&session)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if updatedAttributes["approved"] != nil {
+		session.Approved = updatedAttributes["approved"].(bool)
+	}
+	if updatedAttributes["invalid"] != nil {
+		session.Invalid = updatedAttributes["invalid"].(bool)
+	}
+	if updatedAttributes["created_at"] != nil {
+		session.CreatedAt = updatedAttributes["created_at"].(time.Time)
+	}
+	session.User = userorgdbmodels.User{
+		BaseModel: commondbmodels.BaseModel{
+			UUID: userUUID,
+		},
+	}
+	result = ds.DB.Save(&session)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &authmodels.SessionResponse{
+		SessionUUID:    session.UUID,
+		Device:         session.Device,
+		DeviceId:       session.DeviceId,
+		DeviceLocation: session.DeviceLocation,
+		UserUUID:       session.User.UUID,
+		Approved:       session.Approved,
+		Invalid:        session.Invalid,
+		CreatedAt:      session.CreatedAt,
+	}, nil
+}
+
 // Helper
 func IncrementVersion(latestVersion string) string {
 	version := strings.Split(latestVersion, "v")
@@ -987,7 +1118,7 @@ func IncrementVersion(latestVersion string) string {
 	return newVersion
 }
 
-/////////////////////////////// MODEL METHODS/////////////////////////////////
+/////////////////////////////// MODEL METHODS /////////////////////////////////
 
 func (ds *Datastore) GetModelByName(orgId uuid.UUID, modelName string) (*modelmodels.ModelResponse, error) {
 	var model modeldbmodels.Model
@@ -1365,19 +1496,7 @@ func (ds *Datastore) CreateModelBranch(modelUUID uuid.UUID, modelBranchName stri
 	}, nil
 }
 
-func (ds *Datastore) RegisterModelFile(modelBranchUUID uuid.UUID, sourceTypeUUID uuid.UUID, filePath string, isEmpty bool, hash string, userUUID uuid.UUID) (*modelmodels.ModelBranchVersionResponse, error) {
-	sourcePath := userorgdbmodels.Path{
-		SourcePath:     filePath,
-		SourceTypeUUID: sourceTypeUUID.String(),
-	}
-	err := ds.DB.Create(&sourcePath).Error
-	if err != nil {
-		return nil, err
-	}
-	err = ds.DB.Preload("SourceType").Find(&sourcePath).Error
-	if err != nil {
-		return nil, err
-	}
+func (ds *Datastore) RegisterModelFile(modelBranchUUID uuid.UUID, sourceType string, sourcePublicURL string, filePath string, isEmpty bool, hash string, userUUID uuid.UUID) (*modelmodels.ModelBranchVersionResponse, error) {
 	latestModelVersion := modeldbmodels.ModelVersion{
 		BranchUUID: modelBranchUUID,
 	}
@@ -1404,15 +1523,16 @@ func (ds *Datastore) RegisterModelFile(modelBranchUUID uuid.UUID, sourceTypeUUID
 				UUID: userUUID,
 			},
 		},
-		Path:    sourcePath,
-		IsEmpty: isEmpty,
+		Path:       fmt.Sprintf("%s/%s", sourcePublicURL, filePath),
+		SourceType: sourceType,
+		IsEmpty:    isEmpty,
 	}
 
-	err = ds.DB.Create(&modelVersion).Error
+	err := ds.DB.Create(&modelVersion).Error
 	if err != nil {
 		return nil, err
 	}
-	err = ds.DB.Preload("Branch").Preload("CreatedByUser").Preload("Path.SourceType").Find(&modelVersion).Error
+	err = ds.DB.Preload("Branch").Preload("CreatedByUser").Find(&modelVersion).Error
 	if err != nil {
 		return nil, err
 	}
@@ -1425,14 +1545,8 @@ func (ds *Datastore) RegisterModelFile(modelBranchUUID uuid.UUID, sourceTypeUUID
 			UUID: modelVersion.Branch.UUID,
 			Name: modelVersion.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       modelVersion.Path.UUID,
-			SourcePath: modelVersion.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      modelVersion.Path.SourceType.Name,
-				PublicURL: modelVersion.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       modelVersion.Path,
+		SourceType: modelVersion.SourceType,
 		CreatedBy: userorgmodels.UserHandleResponse{
 			UUID:   modelVersion.CreatedByUser.UUID,
 			Name:   modelVersion.CreatedByUser.Name,
@@ -1460,7 +1574,7 @@ func (ds *Datastore) MigrateModelVersionBranch(modelVersion uuid.UUID, toBranch 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Migrate logs
 	var logs []dbmodels.Log
 	err = ds.DB.Where("model_version_uuid = ?", modelVersion).Preload("ModelVersion").Find(&logs).Error
@@ -1492,14 +1606,8 @@ func (ds *Datastore) MigrateModelVersionBranch(modelVersion uuid.UUID, toBranch 
 			UUID: modelVersionDB.BranchUUID,
 			Name: modelVersionDB.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       modelVersionDB.Path.UUID,
-			SourcePath: modelVersionDB.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      modelVersionDB.Path.SourceType.Name,
-				PublicURL: modelVersionDB.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       modelVersionDB.Path,
+		SourceType: modelVersionDB.SourceType,
 		CreatedBy: userorgmodels.UserHandleResponse{
 			UUID:   modelVersionDB.CreatedByUser.UUID,
 			Handle: modelVersionDB.CreatedByUser.Handle,
@@ -1528,14 +1636,8 @@ func (ds *Datastore) GetModelAllVersions(modelUUID uuid.UUID) ([]modelmodels.Mod
 				UUID: modelVersion.Branch.UUID,
 				Name: modelVersion.Branch.Name,
 			},
-			Path: commonmodels.PathResponse{
-				UUID:       modelVersion.Path.UUID,
-				SourcePath: modelVersion.Path.SourcePath,
-				SourceType: commonmodels.SourceTypeResponse{
-					Name:      modelVersion.Path.SourceType.Name,
-					PublicURL: modelVersion.Path.SourceType.PublicURL,
-				},
-			},
+			Path:       modelVersion.Path,
+			SourceType: modelVersion.SourceType,
 			CreatedBy: userorgmodels.UserHandleResponse{
 				UUID:   modelVersion.CreatedByUser.UUID,
 				Handle: modelVersion.CreatedByUser.Handle,
@@ -1596,7 +1698,7 @@ func (ds *Datastore) GetModelBranchByUUID(modelBranchUUID uuid.UUID) (*modelmode
 
 func (ds *Datastore) GetModelBranchAllVersions(modelBranchUUID uuid.UUID, withLogs bool) ([]modelmodels.ModelBranchVersionResponse, error) {
 	var modelVersions []modeldbmodels.ModelVersion
-	err := ds.DB.Where("branch_uuid = ?", modelBranchUUID).Preload("Branch").Preload("Path.SourceType").Preload("CreatedByUser").Order("LENGTH(version) DESC").Order("version DESC").Find(&modelVersions).Error
+	err := ds.DB.Where("branch_uuid = ?", modelBranchUUID).Preload("Branch").Preload("CreatedByUser").Order("LENGTH(version) DESC").Order("version DESC").Find(&modelVersions).Error
 	if err != nil {
 		return nil, err
 	}
@@ -1610,14 +1712,7 @@ func (ds *Datastore) GetModelBranchAllVersions(modelBranchUUID uuid.UUID, withLo
 				UUID: modelVersion.Branch.UUID,
 				Name: modelVersion.Branch.Name,
 			},
-			Path: commonmodels.PathResponse{
-				UUID:       modelVersion.Path.UUID,
-				SourcePath: modelVersion.Path.SourcePath,
-				SourceType: commonmodels.SourceTypeResponse{
-					Name:      modelVersion.Path.SourceType.Name,
-					PublicURL: modelVersion.Path.SourceType.PublicURL,
-				},
-			},
+			Path:    modelVersion.Path,
 			IsEmpty: modelVersion.IsEmpty,
 			CreatedBy: userorgmodels.UserHandleResponse{
 				UUID:   modelVersion.CreatedByUser.UUID,
@@ -1651,9 +1746,9 @@ func (ds *Datastore) GetModelBranchVersion(modelBranchUUID uuid.UUID, version st
 	var modelVersion modeldbmodels.ModelVersion
 	var res *gorm.DB
 	if strings.ToLower(version) == "latest" {
-		res = ds.DB.Order("created_at desc").Where("branch_uuid = ?", modelBranchUUID).Preload("CreatedByUser").Preload("Branch").Preload("Path.SourceType").Limit(1).Find(&modelVersion)
+		res = ds.DB.Order("created_at desc").Where("branch_uuid = ?", modelBranchUUID).Preload("CreatedByUser").Preload("Branch").Limit(1).Find(&modelVersion)
 	} else {
-		res = ds.DB.Where("version = ?", version).Where("branch_uuid = ?", modelBranchUUID).Preload("CreatedByUser").Preload("Branch").Preload("Path.SourceType").Limit(1).Find(&modelVersion)
+		res = ds.DB.Where("version = ?", version).Where("branch_uuid = ?", modelBranchUUID).Preload("CreatedByUser").Preload("Branch").Limit(1).Find(&modelVersion)
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -1669,14 +1764,8 @@ func (ds *Datastore) GetModelBranchVersion(modelBranchUUID uuid.UUID, version st
 			UUID: modelVersion.Branch.UUID,
 			Name: modelVersion.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       modelVersion.Path.UUID,
-			SourcePath: modelVersion.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      modelVersion.Path.SourceType.Name,
-				PublicURL: modelVersion.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       modelVersion.Path,
+		SourceType: modelVersion.SourceType,
 		CreatedBy: userorgmodels.UserHandleResponse{
 			UUID:   modelVersion.CreatedByUser.UUID,
 			Handle: modelVersion.CreatedByUser.Handle,
@@ -2072,19 +2161,7 @@ func (ds *Datastore) CreateDatasetBranch(datasetUUID uuid.UUID, datasetBranchNam
 	}, nil
 }
 
-func (ds *Datastore) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceTypeUUID uuid.UUID, filePath string, isEmpty bool, hash string, lineage string, userUUID uuid.UUID) (*datasetmodels.DatasetBranchVersionResponse, error) {
-	sourcePath := userorgdbmodels.Path{
-		SourcePath:     filePath,
-		SourceTypeUUID: sourceTypeUUID.String(),
-	}
-	err := ds.DB.Create(&sourcePath).Error
-	if err != nil {
-		return nil, err
-	}
-	err = ds.DB.Preload("SourceType").Find(&sourcePath).Error
-	if err != nil {
-		return nil, err
-	}
+func (ds *Datastore) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceType string, sourcePublicURL string, filePath string, isEmpty bool, hash string, lineage string, userUUID uuid.UUID) (*datasetmodels.DatasetBranchVersionResponse, error) {
 	latestDatasetVersion := datasetdbmodels.DatasetVersion{
 		BranchUUID: datasetBranchUUID,
 	}
@@ -2114,14 +2191,15 @@ func (ds *Datastore) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceType
 		Lineage: datasetdbmodels.Lineage{
 			Lineage: lineage,
 		},
-		Path:    sourcePath,
-		IsEmpty: isEmpty,
+		Path:       fmt.Sprintf("%s/%s", sourcePublicURL, filePath),
+		SourceType: sourceType,
+		IsEmpty:    isEmpty,
 	}
-	err = ds.DB.Create(&datasetVersion).Error
+	err := ds.DB.Create(&datasetVersion).Error
 	if err != nil {
 		return nil, err
 	}
-	err = ds.DB.Preload("Lineage").Preload("Branch").Preload("CreatedByUser").Preload("Path.SourceType").Find(&datasetVersion).Error
+	err = ds.DB.Preload("Lineage").Preload("Branch").Preload("CreatedByUser").Find(&datasetVersion).Error
 	if err != nil {
 		return nil, err
 	}
@@ -2134,14 +2212,8 @@ func (ds *Datastore) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceType
 			UUID: datasetVersion.Branch.UUID,
 			Name: datasetVersion.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       datasetVersion.Path.UUID,
-			SourcePath: datasetVersion.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      datasetVersion.Path.SourceType.Name,
-				PublicURL: datasetVersion.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       datasetVersion.Path,
+		SourceType: datasetVersion.SourceType,
 		Lineage: datasetmodels.LineageResponse{
 			UUID:    datasetVersion.Lineage.UUID,
 			Lineage: datasetVersion.Lineage.Lineage,
@@ -2207,14 +2279,8 @@ func (ds *Datastore) MigrateDatasetVersionBranch(datasetVersion uuid.UUID, toBra
 			UUID: datasetVersionDB.BranchUUID,
 			Name: datasetVersionDB.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       datasetVersionDB.Path.UUID,
-			SourcePath: datasetVersionDB.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      datasetVersionDB.Path.SourceType.Name,
-				PublicURL: datasetVersionDB.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       datasetVersionDB.Path,
+		SourceType: datasetVersionDB.SourceType,
 		Lineage: datasetmodels.LineageResponse{
 			UUID:    datasetVersionDB.Lineage.UUID,
 			Lineage: datasetVersionDB.Lineage.Lineage,
@@ -2247,14 +2313,8 @@ func (ds *Datastore) GetDatasetAllVersions(datasetUUID uuid.UUID) ([]datasetmode
 				UUID: datasetVersion.Branch.UUID,
 				Name: datasetVersion.Branch.Name,
 			},
-			Path: commonmodels.PathResponse{
-				UUID:       datasetVersion.Path.UUID,
-				SourcePath: datasetVersion.Path.SourcePath,
-				SourceType: commonmodels.SourceTypeResponse{
-					Name:      datasetVersion.Path.SourceType.Name,
-					PublicURL: datasetVersion.Path.SourceType.PublicURL,
-				},
-			},
+			Path:       datasetVersion.Path,
+			SourceType: datasetVersion.SourceType,
 			Lineage: datasetmodels.LineageResponse{
 				UUID:    datasetVersion.Lineage.UUID,
 				Lineage: datasetVersion.Lineage.Lineage,
@@ -2313,7 +2373,7 @@ func (ds *Datastore) GetDatasetBranchByUUID(datasetBranchUUID uuid.UUID) (*datas
 
 func (ds *Datastore) GetDatasetBranchAllVersions(datasetBranchUUID uuid.UUID) ([]datasetmodels.DatasetBranchVersionResponse, error) {
 	var datasetVersions []datasetdbmodels.DatasetVersion
-	err := ds.DB.Where("branch_uuid = ?", datasetBranchUUID).Preload("Lineage").Preload("Branch").Preload("CreatedByUser").Preload("Path.SourceType").Order("LENGTH(version) DESC").Order("version DESC").Find(&datasetVersions).Error
+	err := ds.DB.Where("branch_uuid = ?", datasetBranchUUID).Preload("Lineage").Preload("Branch").Preload("CreatedByUser").Order("LENGTH(version) DESC").Order("version DESC").Find(&datasetVersions).Error
 	if err != nil {
 		return nil, err
 	}
@@ -2327,14 +2387,8 @@ func (ds *Datastore) GetDatasetBranchAllVersions(datasetBranchUUID uuid.UUID) ([
 				UUID: datasetVersion.Branch.UUID,
 				Name: datasetVersion.Branch.Name,
 			},
-			Path: commonmodels.PathResponse{
-				UUID:       datasetVersion.Path.UUID,
-				SourcePath: datasetVersion.Path.SourcePath,
-				SourceType: commonmodels.SourceTypeResponse{
-					Name:      datasetVersion.Path.SourceType.Name,
-					PublicURL: datasetVersion.Path.SourceType.PublicURL,
-				},
-			},
+			Path:       datasetVersion.Path,
+			SourceType: datasetVersion.SourceType,
 			Lineage: datasetmodels.LineageResponse{
 				UUID:    datasetVersion.Lineage.UUID,
 				Lineage: datasetVersion.Lineage.Lineage,
@@ -2357,9 +2411,9 @@ func (ds *Datastore) GetDatasetBranchVersion(datasetBranchUUID uuid.UUID, versio
 	var datasetVersion datasetdbmodels.DatasetVersion
 	var res *gorm.DB
 	if strings.ToLower(version) == "latest" {
-		res = ds.DB.Preload("Branch").Where("branch_uuid = ?", datasetBranchUUID).Preload("Lineage").Preload("CreatedByUser").Preload("Path.SourceType").Order("created_at desc").Limit(1).Find(&datasetVersion)
+		res = ds.DB.Preload("Branch").Where("branch_uuid = ?", datasetBranchUUID).Preload("Lineage").Preload("CreatedByUser").Order("created_at desc").Limit(1).Find(&datasetVersion)
 	} else {
-		res = ds.DB.Where("version = ?", version).Where("branch_uuid = ?", datasetBranchUUID).Preload("Branch").Preload("Lineage").Preload("CreatedByUser").Preload("Path.SourceType").Limit(1).Find(&datasetVersion)
+		res = ds.DB.Where("version = ?", version).Where("branch_uuid = ?", datasetBranchUUID).Preload("Branch").Preload("Lineage").Preload("CreatedByUser").Limit(1).Find(&datasetVersion)
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -2375,14 +2429,8 @@ func (ds *Datastore) GetDatasetBranchVersion(datasetBranchUUID uuid.UUID, versio
 			UUID: datasetVersion.Branch.UUID,
 			Name: datasetVersion.Branch.Name,
 		},
-		Path: commonmodels.PathResponse{
-			UUID:       datasetVersion.Path.UUID,
-			SourcePath: datasetVersion.Path.SourcePath,
-			SourceType: commonmodels.SourceTypeResponse{
-				Name:      datasetVersion.Path.SourceType.Name,
-				PublicURL: datasetVersion.Path.SourceType.PublicURL,
-			},
-		},
+		Path:       datasetVersion.Path,
+		SourceType: datasetVersion.SourceType,
 		Lineage: datasetmodels.LineageResponse{
 			UUID:    datasetVersion.Lineage.UUID,
 			Lineage: datasetVersion.Lineage.Lineage,
@@ -2745,59 +2793,36 @@ func (ds *Datastore) DeleteDatasetActivity(activityUUID uuid.UUID) error {
 
 /////////////////////////////// SECRET API METHODS ///////////////////////////////
 
-func (ds *Datastore) GetSourceTypeByUUID(sourceTypeUUID uuid.UUID) (*commonmodels.SourceTypeResponse, error) {
-	var sourceType userorgdbmodels.SourceType
-	res := ds.DB.Where("uuid = ?", sourceTypeUUID).Find(&sourceType)
+func (ds *Datastore) GetOrganizationSecrets(orgId uuid.UUID) ([]string, error) {
+	var secretNames []string
+	res := ds.DB.Model(&userorgdbmodels.Secret{}).Where("org_uuid = ?", orgId).Distinct().Pluck("name", &secretNames)
 	if res.RowsAffected == 0 {
 		return nil, nil
 	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	return &commonmodels.SourceTypeResponse{
-		UUID:      sourceType.UUID,
-		Name:      sourceType.Name,
-		PublicURL: sourceType.PublicURL,
-	}, nil
+	return secretNames, nil
 }
 
-func (ds *Datastore) GetSourceTypeByName(orgId uuid.UUID, name string) (uuid.UUID, error) {
-	var sourceType userorgdbmodels.SourceType
-	res := ds.DB.Where("UPPER(name) = ?", name).Where("org_uuid = ?", orgId).Limit(1).Find(&sourceType)
-	if res.RowsAffected == 0 {
-		return uuid.Nil, nil
-	}
-	if res.Error != nil {
-		return uuid.Nil, res.Error
-	}
-	return sourceType.UUID, nil
-}
-
-func (ds *Datastore) GetSourceSecret(orgId uuid.UUID, source string) (*commonmodels.SourceSecrets, error) {
+func (ds *Datastore) GetSecretByName(orgId uuid.UUID, secretName string) (*commonmodels.SourceSecrets, error) {
 	var secrets []userorgdbmodels.Secret
-	res := ds.DB.Where("org_uuid = ?", orgId).Find(&secrets)
+	res := ds.DB.Where("org_uuid = ? and name = ?", orgId, secretName).Find(&secrets)
 	if res.RowsAffected == 0 {
 		return nil, nil
 	}
 	if res.Error != nil {
 		return nil, res.Error
+	}
+	if len(secrets) == 0 {
+		return nil, fmt.Errorf("no secrets found for secret name %s", secretName)
 	}
 	var sourceSecret commonmodels.SourceSecrets
-	switch strings.ToUpper(source) {
-	// case "R2":
-	// 	var r2Secret R2Secrets
-	// 	err := r2Secret.Load(secrets)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	sourceSecret.AccountId = r2Secret.AccountId
-	// 	sourceSecret.AccessKeyId = r2Secret.AccessKeyId
-	// 	sourceSecret.AccessKeySecret = r2Secret.AccessKeySecret
-	// 	sourceSecret.BucketName = r2Secret.BucketName
-	// 	sourceSecret.PublicURL = r2Secret.PublicURL
+	secretType := strings.ToUpper(strings.Split(secrets[0].Key, "_")[0])
+	switch secretType {
 	case "S3":
 		for _, secret := range secrets {
-			switch strings.ToUpper(secret.Name) {
+			switch strings.ToUpper(secret.Key) {
 			case "S3_ACCESS_KEY_ID":
 				sourceSecret.AccessKeyId = secret.Value
 			case "S3_ACCESS_KEY_SECRET":
@@ -2806,194 +2831,162 @@ func (ds *Datastore) GetSourceSecret(orgId uuid.UUID, source string) (*commonmod
 				sourceSecret.BucketName = secret.Value
 			case "S3_BUCKET_LOCATION":
 				sourceSecret.BucketLocation = secret.Value
+			case "S3_PUBLIC_URL":
+				sourceSecret.PublicURL = secret.Value
 			}
+
 		}
 		if sourceSecret.AccessKeyId == "" || sourceSecret.AccessKeySecret == "" || sourceSecret.BucketName == "" || sourceSecret.BucketLocation == "" {
-			return nil, fmt.Errorf("s3 secrets not found")
+			return nil, fmt.Errorf("s3 secrets not found or invalid")
+		}
+	case "R2":
+		for _, secret := range secrets {
+			switch strings.ToUpper(secret.Key) {
+			case "R2_ACCOUNT_ID":
+				sourceSecret.AccountId = secret.Value
+			case "R2_ACCESS_KEY_ID":
+				sourceSecret.AccessKeyId = secret.Value
+			case "R2_ACCESS_KEY_SECRET":
+				sourceSecret.AccessKeySecret = secret.Value
+			case "R2_BUCKET_NAME":
+				sourceSecret.BucketName = secret.Value
+			case "R2_PUBLIC_URL":
+				sourceSecret.PublicURL = secret.Value
+			}
+		}
+		if sourceSecret.AccountId == "" || sourceSecret.AccessKeyId == "" || sourceSecret.AccessKeySecret == "" || sourceSecret.BucketName == "" || sourceSecret.PublicURL == "" {
+			return nil, fmt.Errorf("r2 secrets not found or invalid")
 		}
 	}
+	sourceSecret.SourceType = secretType
 	return &sourceSecret, nil
 }
 
-// func (ds *Datastore) CreateR2Secrets(orgId uuid.UUID, accountId string, accessKeyId string, accessKeySecret string, bucketName string, publicURL string) (*R2Secrets, error) {
-// 	secret := userorgdbmodels.Secret{
-// 		Org: userorgdbmodels.Organization{
-// 			BaseModel: commondbmodels.BaseModel{
-// 				UUID: orgId,
-// 			},
-// 		},
-// 	}
-// 	err := ds.DB.Transaction(func(tx *gorm.DB) error {
-// 		secret.Name = "R2_ACCOUNT_ID"
-// 		secret.Value = accountId
-// 		err := tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "R2_ACCESS_KEY_ID"
-// 		secret.Value = accessKeyId
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "R2_ACCESS_KEY_SECRET"
-// 		secret.Value = accessKeySecret
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "R2_BUCKET_NAME"
-// 		secret.Value = bucketName
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &R2Secrets{
-// 		AccountId:       accountId,
-// 		AccessKeyId:     accessKeyId,
-// 		AccessKeySecret: accessKeySecret,
-// 		BucketName:      bucketName,
-// 		PublicURL:       publicURL,
-// 	}, nil
-// }
-
-func (ds *Datastore) CreateR2Source(orgId uuid.UUID, publicURL string) (*commonmodels.SourceTypeResponse, error) {
-	sourceType := userorgdbmodels.SourceType{
-		Name:      "R2",
-		PublicURL: publicURL,
+func (ds *Datastore) CreateR2Secrets(orgId uuid.UUID, secretName string, accountId string, accessKeyId string, accessKeySecret string, bucketName string, endpoint string) (*commonmodels.SourceSecrets, error) {
+	secret := userorgdbmodels.Secret{
 		Org: userorgdbmodels.Organization{
 			BaseModel: commondbmodels.BaseModel{
 				UUID: orgId,
 			},
 		},
+		Name: secretName,
 	}
-	err := ds.DB.Create(&sourceType).Find(&sourceType).Error
+	publicURL := fmt.Sprintf("https://%s", endpoint)
+	err := ds.DB.Transaction(func(tx *gorm.DB) error {
+		secret.Key = "R2_ACCOUNT_ID"
+		secret.Value = accountId
+		err := tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "R2_ACCESS_KEY_ID"
+		secret.Value = accessKeyId
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "R2_ACCESS_KEY_SECRET"
+		secret.Value = accessKeySecret
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "R2_BUCKET_NAME"
+		secret.Value = bucketName
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "R2_PUBLIC_URL"
+		secret.Value = publicURL
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return &commonmodels.SourceTypeResponse{
-		UUID:      sourceType.BaseModel.UUID,
-		Name:      sourceType.Name,
-		PublicURL: sourceType.PublicURL,
+	return &commonmodels.SourceSecrets{
+		AccountId: accountId,
+		// AccessKeyId:     accessKeyId,
+		// AccessKeySecret: accessKeySecret,
+		BucketName: bucketName,
+		PublicURL:  publicURL,
 	}, nil
 }
 
-// func (ds *Datastore) DeleteR2Secrets(orgId uuid.UUID) error {
-// 	var secrets []userorgdbmodels.Secret
-// 	err := ds.DB.Where("org_uuid = ?", orgId).Where("name LIKE ?", "R2_%").Delete(&secrets).Error
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// func (ds *Datastore) CreateS3Secrets(orgId uuid.UUID, accessKeyId string, accessKeySecret string, bucketName string, bucketLocation string) (*S3Secrets, error) {
-// 	secret := userorgdbmodels.Secret{
-// 		Org: userorgdbmodels.Organization{
-// 			BaseModel: commondbmodels.BaseModel{
-// 				UUID: orgId,
-// 			},
-// 		},
-// 	}
-// 	err := ds.DB.Transaction(func(tx *gorm.DB) error {
-// 		secret.Name = "S3_ACCESS_KEY_ID"
-// 		secret.Value = accessKeyId
-// 		err := tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "S3_ACCESS_KEY_SECRET"
-// 		secret.Value = accessKeySecret
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "S3_BUCKET_NAME"
-// 		secret.Value = bucketName
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		secret.UUID = uuid.Nil
-// 		secret.Name = "S3_BUCKET_LOCATION"
-// 		secret.Value = bucketLocation
-// 		err = tx.Create(&secret).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	publicURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com", bucketName, bucketLocation)
-// 	return &S3Secrets{
-// 		AccessKeyId:     accessKeyId,
-// 		AccessKeySecret: accessKeySecret,
-// 		BucketName:      bucketName,
-// 		PublicURL:       publicURL,
-// 	}, nil
-// }
-
-func (ds *Datastore) CreateS3Source(orgId uuid.UUID, publicURL string) (*commonmodels.SourceTypeResponse, error) {
-	sourceType := userorgdbmodels.SourceType{
-		Name:      "S3",
-		PublicURL: publicURL,
+func (ds *Datastore) CreateS3Secrets(orgId uuid.UUID, secretName string, accessKeyId string, accessKeySecret string, bucketName string, bucketLocation string) (*commonmodels.SourceSecrets, error) {
+	secret := userorgdbmodels.Secret{
 		Org: userorgdbmodels.Organization{
 			BaseModel: commondbmodels.BaseModel{
 				UUID: orgId,
 			},
 		},
+		Name: secretName,
 	}
-	err := ds.DB.Create(&sourceType).Find(&sourceType).Error
+	publicURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com", bucketName, bucketLocation)
+	err := ds.DB.Transaction(func(tx *gorm.DB) error {
+		secret.Key = "S3_ACCESS_KEY_ID"
+		secret.Value = accessKeyId
+		err := tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "S3_ACCESS_KEY_SECRET"
+		secret.Value = accessKeySecret
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "S3_BUCKET_NAME"
+		secret.Value = bucketName
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "S3_BUCKET_LOCATION"
+		secret.Value = bucketLocation
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		secret.UUID = uuid.Nil
+		secret.Key = "S3_PUBLIC_URL"
+		secret.Value = publicURL
+		err = tx.Create(&secret).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return &commonmodels.SourceTypeResponse{
-		UUID:      sourceType.BaseModel.UUID,
-		Name:      sourceType.Name,
-		PublicURL: sourceType.PublicURL,
+	return &commonmodels.SourceSecrets{
+		// AccessKeyId:     accessKeyId,
+		// AccessKeySecret: accessKeySecret,
+		BucketName:     bucketName,
+		BucketLocation: bucketLocation,
+		PublicURL:      publicURL,
 	}, nil
 }
 
-// func (ds *Datastore) DeleteS3Secrets(orgId uuid.UUID) error {
-// 	var secrets []userorgdbmodels.Secret
-// 	err := ds.DB.Where("org_uuid = ?", orgId).Where("name LIKE ?", "S3_%").Delete(&secrets).Error
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
-func (ds *Datastore) CreateLocalSource(orgId uuid.UUID) (*commonmodels.SourceTypeResponse, error) {
-	sourceType := userorgdbmodels.SourceType{
-		Name: "LOCAL",
-		Org: userorgdbmodels.Organization{
-			BaseModel: commondbmodels.BaseModel{
-				UUID: orgId,
-			},
-		},
-		PublicURL: "file://",
-	}
-	err := ds.DB.Create(&sourceType).Find(&sourceType).Error
+func (ds *Datastore) DeleteSecrets(orgId uuid.UUID, secretName string) error {
+	var secrets []userorgdbmodels.Secret
+	err := ds.DB.Where("org_uuid = ?", orgId).Where("name = ?", secretName).Delete(&secrets).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &commonmodels.SourceTypeResponse{
-		UUID:      sourceType.UUID,
-		Name:      sourceType.Name,
-		PublicURL: sourceType.PublicURL,
-	}, nil
+	return nil
 }
 
 /////////////////////////////// REVIEW API METHODS ///////////////////////////////

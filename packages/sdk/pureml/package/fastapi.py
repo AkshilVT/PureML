@@ -2,45 +2,82 @@ import os
 import shutil
 import uvicorn
 from fastapi import FastAPI
-from pureml.schema import FastAPISchema, PredictionSchema
+from pureml.schema import FastAPISchema, PredictSchema, PathSchema
 from pureml.utils.package import process_input, process_output
 from pureml.utils.version_utils import parse_version_label
+from pureml import predict, pip_requirement, resources
+from pureml.utils.resources import zip_content, unzip_content
 
 
-prediction_schema = PredictionSchema()
+prediction_schema = PredictSchema()
 fastapi_schema = FastAPISchema()
+path_schema = PathSchema()
 
 
-def get_predict_file(predict_path):
+def get_resources(label, resources_path):
+    resources.fetch(label=label)
 
-    # os.makedirs(PATH_PREDICT_DIR, exist_ok=True)
+    if not os.path.exists(prediction_schema.PATH_RESOURCES):
 
-    if predict_path is None:
-        predict_path = prediction_schema.PATH_PREDICT_USER
-        print("Taking the default predict.py file path: ", predict_path)
+        if resources_path is None:
+
+            resources_path = prediction_schema.PATH_RESOURCES_DIR_DEFAULT
+            print("Taking the default resources path: ", resources_path)
+        else:
+            print("Taking the resources path: ", resources_path)
+
+        zip_content(resources_path, prediction_schema.PATH_RESOURCES)
+
+        if os.path.exists(prediction_schema.PATH_RESOURCES):
+            unzip_content(
+                prediction_schema.PATH_RESOURCES, path_schema.PATH_PREDICT_DIR
+            )
+        else:
+            raise Exception(resources_path, "doesnot exists!!!")
     else:
-        print("Taking the predict.py file path: ", predict_path)
+        print("Taking the fetched resources file path")
 
-    if os.path.exists(predict_path):
-        shutil.copy(predict_path, prediction_schema.PATH_PREDICT)
+
+def get_predict_file(label, predict_path):
+
+    predict.fetch(label)
+
+    if not os.path.exists(prediction_schema.PATH_PREDICT):
+        print("[orange] Prediction Function is not logged")
+
+        # os.makedirs(PATH_PREDICT_DIR, exist_ok=True)
+
+        if predict_path is None:
+            predict_path = prediction_schema.PATH_PREDICT_USER
+            print("Taking the default predict.py file path: ", predict_path)
+        else:
+            print("Taking the predict.py file path: ", predict_path)
+
+        if os.path.exists(predict_path):
+            shutil.copy(predict_path, prediction_schema.PATH_PREDICT)
+        else:
+            raise Exception(predict_path, "doesnot exists!!!")
     else:
-        raise Exception(predict_path, "doesnot exists!!!")
+        print("Taking the fetched predict.py file path")
 
 
-def get_requirements_file(requirements_path):
+def get_requirements_file(label, requirements_path):
+    pip_requirement.fetch(label=label)
 
-    # os.makedirs(prediction_schema.paths.PATH_PREDICT_DIR, exist_ok=True)
+    if not os.path.exists(prediction_schema.PATH_PREDICT_REQUIREMENTS):
 
-    if requirements_path is None:
-        requirements_path = prediction_schema.PATH_PREDICT_REQUIREMENTS_USER
-        print("Taking the default requirements.txt file path: ", requirements_path)
+        if requirements_path is None:
+            requirements_path = prediction_schema.PATH_PREDICT_REQUIREMENTS_USER
+            print("Taking the default requirements.txt file path: ", requirements_path)
+        else:
+            print("Taking the requirements.txt file path: ", requirements_path)
+
+        if os.path.exists(requirements_path):
+            shutil.copy(requirements_path, prediction_schema.PATH_PREDICT_REQUIREMENTS)
+        else:
+            raise Exception(requirements_path, "doesnot exists!!!")
     else:
-        print("Taking the requirements.txt file path: ", requirements_path)
-
-    if os.path.exists(requirements_path):
-        shutil.copy(requirements_path, prediction_schema.PATH_PREDICT_REQUIREMENTS)
-    else:
-        raise Exception(requirements_path, "doesnot exists!!!")
+        print("Taking the fetched requirements.txt file path")
 
 
 def generate_api(label: str):
@@ -58,7 +95,7 @@ import json
 import shutil
 from pureml.utils.package import process_input, process_output
 from typing import Union, Optional
-from pureml.utils.prediction import predict_request_with_json, predict_request_with_file
+from pureml.utils.predict import predict_request_with_json, predict_request_with_file
 
 import nest_asyncio
 from pyngrok import ngrok
@@ -125,15 +162,15 @@ if __name__ == '__main__':
 
 
 def create_fastapi_file(
-    label,
-    predict_path,
-    requirements_path,
+    label, predict_path=None, requirements_path=None, resources_path=None
 ):
     fastapi_schema = FastAPISchema()
 
-    get_predict_file(predict_path)
+    get_resources(label, resources_path)
 
-    get_requirements_file(requirements_path)
+    get_predict_file(label, predict_path)
+
+    get_requirements_file(label, requirements_path)
 
     api = generate_api(label=label)
 
@@ -157,7 +194,9 @@ def run(label, predict_path=None, requirements_path=None):
         label, predict_path=predict_path, requirements_path=requirements_path
     )
 
-    run_command = "python {api_path}".format(api_path=fastapi_schema.PATH_FASTAPI_FILE)
+    run_command = "python '{api_path}'".format(
+        api_path=fastapi_schema.PATH_FASTAPI_FILE
+    )
 
     os.system(run_command)
 

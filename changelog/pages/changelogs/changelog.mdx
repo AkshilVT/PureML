@@ -1,0 +1,19 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "changelog",
+  publishedAt: "2023-03-30T09:00:00.000Z",
+  title: "Its where you are: Our new changelog",
+  headerImage: "/changelogs/changelog.png",
+  authors: [],
+};
+
+**New**
+
+- Changelog page to update you about PureML
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

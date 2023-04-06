@@ -1,10 +1,11 @@
 import os
 import joblib
 from collections import defaultdict, OrderedDict
-from pureml.schema import PathSchema
+from pureml.schema import PathSchema, ConfigKeys
 
 
 path_schema = PathSchema().get_instance()
+config_keys = ConfigKeys
 
 
 def load_config():
@@ -15,18 +16,20 @@ def load_config():
     else:
         config = defaultdict()
 
-        config["load_data"] = defaultdict()
-        config["transformer"] = OrderedDict()
-        config["dataset"] = defaultdict()
+        config[config_keys.load_data.value] = defaultdict()
+        config[config_keys.transformer.value] = OrderedDict()
+        config[config_keys.dataset.value] = defaultdict()
 
-        config["model"] = OrderedDict()
+        config[config_keys.model.value] = OrderedDict()
 
-        config["params"] = defaultdict()
-        config["metrics"] = defaultdict()
-        config["figure"] = defaultdict()
-        config["artifacts"] = defaultdict()
+        config[config_keys.params.value] = defaultdict()
+        config[config_keys.metrics.value] = defaultdict()
+        config[config_keys.figure.value] = defaultdict()
+        config[config_keys.artifacts.value] = defaultdict()
 
-        config["predict"] = defaultdict()
+        config[config_keys.pred_function.value] = defaultdict()
+        config[config_keys.pip_requirement.value] = defaultdict()
+        config[config_keys.resource.value] = defaultdict()
 
         joblib.dump(config, path_schema.PATH_CONFIG)
 
@@ -41,3 +44,14 @@ def save_config(config):
     # print(config)
 
     joblib.dump(config, path_schema.PATH_CONFIG)
+
+
+def reset_config(key):
+    if os.path.exists(path_schema.PATH_CONFIG):
+        config = joblib.load(path_schema.PATH_CONFIG)
+        if key in config.keys():
+            if key in [config_keys.transformer.value, config_keys.model.value]:
+                config[key] = OrderedDict()
+            else:
+                config[key] = defaultdict()
+            save_config(config)

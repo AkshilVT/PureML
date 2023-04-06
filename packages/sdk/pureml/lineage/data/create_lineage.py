@@ -1,6 +1,7 @@
 from pureml.utils.config import load_config
 from collections import OrderedDict
 import json
+import time
 
 
 def create_nodes(components):
@@ -11,6 +12,8 @@ def create_nodes(components):
             "id": component["name"],
             "text": component["name"],
             "nodeType": component["type"],
+            "desc": str(component["desc"]),
+            "time": str(component["time"]),
         }
         for component in components
     ]
@@ -26,7 +29,16 @@ def create_extra_nodes(nodes, edges):
 
     extra_nodes = list(set([n for n in edge_nodes if n not in node_nodes]))
 
-    nodes = nodes + [{"id": n, "text": n, "nodeType": "unknown"} for n in extra_nodes]
+    nodes = nodes + [
+        {
+            "id": n,
+            "text": n,
+            "nodeType": "unknown",
+            "desc": str(None),
+            "time": str(time.time()),
+        }
+        for n in extra_nodes
+    ]
 
     return nodes
 

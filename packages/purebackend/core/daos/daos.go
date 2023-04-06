@@ -3,6 +3,7 @@ package daos
 import (
 	"errors"
 
+	authmodels "github.com/PureMLHQ/PureML/packages/purebackend/auth/models"
 	commonmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/models"
 	impl "github.com/PureMLHQ/PureML/packages/purebackend/core/daos/datastore"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/models"
@@ -161,6 +162,18 @@ func (dao *Dao) UpdateUserPassword(userUUID uuid.UUID, hashedPassword string) er
 	return dao.Datastore().UpdateUserPassword(userUUID, hashedPassword)
 }
 
+func (dao *Dao) GetSession(sessionUUID uuid.UUID) (*authmodels.SessionResponse, error) {
+	return dao.Datastore().GetSession(sessionUUID)
+}
+
+func (dao *Dao) CreateSession(deviceData string, deviceId string, deviceLocation string) (*authmodels.CreateSessionResponse, error) {
+	return dao.Datastore().CreateSession(deviceData, deviceId, deviceLocation)
+}
+
+func (dao *Dao) UpdateSession(sessionUUID uuid.UUID, userUUID uuid.UUID, updatedAttributes map[string]interface{}) (*authmodels.SessionResponse, error) {
+	return dao.Datastore().UpdateSession(sessionUUID, userUUID, updatedAttributes)
+}
+
 func (dao *Dao) GetLogForModelVersion(modelVersionUUID uuid.UUID) ([]models.LogResponse, error) {
 	return dao.Datastore().GetLogForModelVersion(modelVersionUUID)
 }
@@ -219,8 +232,8 @@ func (dao *Dao) CreateModelBranches(modelUUID uuid.UUID, branchNames []string) (
 	return branches, nil
 }
 
-func (dao *Dao) RegisterModelFile(modelBranchUUID uuid.UUID, sourceTypeUUID uuid.UUID, path string, isEmpty bool, hash string, userUUID uuid.UUID) (*modelmodels.ModelBranchVersionResponse, error) {
-	return dao.Datastore().RegisterModelFile(modelBranchUUID, sourceTypeUUID, path, isEmpty, hash, userUUID)
+func (dao *Dao) RegisterModelFile(modelBranchUUID uuid.UUID, sourceType string, sourcePublicURL string, path string, isEmpty bool, hash string, userUUID uuid.UUID) (*modelmodels.ModelBranchVersionResponse, error) {
+	return dao.Datastore().RegisterModelFile(modelBranchUUID, sourceType, sourcePublicURL, path, isEmpty, hash, userUUID)
 }
 
 func (dao *Dao) GetModelAllBranches(modelUUID uuid.UUID) ([]modelmodels.ModelBranchResponse, error) {
@@ -281,8 +294,8 @@ func (dao *Dao) CreateDatasetBranches(datasetUUID uuid.UUID, branchNames []strin
 	return branches, nil
 }
 
-func (dao *Dao) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceTypeUUID uuid.UUID, path string, isEmpty bool, hash string, lineage string, userUUID uuid.UUID) (*datasetmodels.DatasetBranchVersionResponse, error) {
-	return dao.Datastore().RegisterDatasetFile(datasetBranchUUID, sourceTypeUUID, path, isEmpty, hash, lineage, userUUID)
+func (dao *Dao) RegisterDatasetFile(datasetBranchUUID uuid.UUID, sourceType string, sourcePublicURL string, path string, isEmpty bool, hash string, lineage string, userUUID uuid.UUID) (*datasetmodels.DatasetBranchVersionResponse, error) {
+	return dao.Datastore().RegisterDatasetFile(datasetBranchUUID, sourceType, sourcePublicURL, path, isEmpty, hash, lineage, userUUID)
 }
 
 func (dao *Dao) GetDatasetAllBranches(datasetUUID uuid.UUID) ([]datasetmodels.DatasetBranchResponse, error) {
@@ -341,44 +354,24 @@ func (dao *Dao) DeleteDatasetActivity(activityUUID uuid.UUID) error {
 	return dao.Datastore().DeleteDatasetActivity(activityUUID)
 }
 
-func (dao *Dao) GetSourceTypeByUUID(sourceTypeUUID uuid.UUID) (*commonmodels.SourceTypeResponse, error) {
-	return dao.Datastore().GetSourceTypeByUUID(sourceTypeUUID)
+func (dao *Dao) GetOrganizationSecrets(orgId uuid.UUID) ([]string, error) {
+	return dao.Datastore().GetOrganizationSecrets(orgId)
 }
 
-func (dao *Dao) GetSourceTypeByName(orgId uuid.UUID, sourceName string) (uuid.UUID, error) {
-	return dao.Datastore().GetSourceTypeByName(orgId, sourceName)
+func (dao *Dao) GetSecretByName(orgId uuid.UUID, secretName string) (*commonmodels.SourceSecrets, error) {
+	return dao.Datastore().GetSecretByName(orgId, secretName)
 }
 
-func (dao *Dao) GetSourceSecret(orgId uuid.UUID, source string) (*commonmodels.SourceSecrets, error) {
-	return dao.Datastore().GetSourceSecret(orgId, source)
+func (dao *Dao) CreateR2Secrets(orgId uuid.UUID, secretName string, accountId string, accessKeyId string, accessKeySecret string, bucketName string, publicURL string) (*commonmodels.SourceSecrets, error) {
+	return dao.Datastore().CreateR2Secrets(orgId, secretName, accountId, accessKeyId, accessKeySecret, bucketName, publicURL)
 }
 
-// func (dao *Dao) CreateR2Secrets(orgId uuid.UUID, accountId string, accessKeyId string, accessKeySecret string, bucketName string, publicURL string) (*impl.R2Secrets, error) {
-// 	return dao.Datastore().CreateR2Secrets(orgId, accountId, accessKeyId, accessKeySecret, bucketName, publicURL)
-// }
-
-func (dao *Dao) CreateR2Source(orgId uuid.UUID, publicURL string) (*commonmodels.SourceTypeResponse, error) {
-	return dao.Datastore().CreateR2Source(orgId, publicURL)
+func (dao *Dao) CreateS3Secrets(orgId uuid.UUID, secretName string, accessKeyId string, accessKeySecret string, bucketName string, bucketLocation string) (*commonmodels.SourceSecrets, error) {
+	return dao.Datastore().CreateS3Secrets(orgId, secretName, accessKeyId, accessKeySecret, bucketName, bucketLocation)
 }
 
-// func (dao *Dao) DeleteR2Secrets(orgId uuid.UUID) error {
-// 	return dao.Datastore().DeleteR2Secrets(orgId)
-// }
-
-// func (dao *Dao) CreateS3Secrets(orgId uuid.UUID, accessKeyId string, accessKeySecret string, bucketName string, bucketLocation string) (*impl.S3Secrets, error) {
-// 	return dao.Datastore().CreateS3Secrets(orgId, accessKeyId, accessKeySecret, bucketName, bucketLocation)
-// }
-
-func (dao *Dao) CreateS3Source(orgId uuid.UUID, publicURL string) (*commonmodels.SourceTypeResponse, error) {
-	return dao.Datastore().CreateS3Source(orgId, publicURL)
-}
-
-// func (dao *Dao) DeleteS3Secrets(orgId uuid.UUID) error {
-// 	return dao.Datastore().DeleteS3Secrets(orgId)
-// }
-
-func (dao *Dao) CreateLocalSource(orgId uuid.UUID) (*commonmodels.SourceTypeResponse, error) {
-	return dao.Datastore().CreateLocalSource(orgId)
+func (dao *Dao) DeleteSecrets(orgId uuid.UUID, secretName string) error {
+	return dao.Datastore().DeleteSecrets(orgId, secretName)
 }
 
 func (dao *Dao) GetModelReadmeVersion(modelUUID uuid.UUID, version string) (*commonmodels.ReadmeVersionResponse, error) {

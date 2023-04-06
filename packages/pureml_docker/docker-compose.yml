@@ -14,8 +14,7 @@ services:
     image: puremlhq/pureml_frontend:dev
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://backend:8080/api/
-      - NEXT_PUBLIC_AIRTABLE_API_KEY={YOUR_AIRTABLE_API_KEY}
-    ports:.
+    ports:
       - 3000:3000
     links:
       - backend

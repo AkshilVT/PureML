@@ -1,7 +1,6 @@
 import os, json
 from pureml.schema import PathSchema
 
-
 path_schema = PathSchema().get_instance()
 
 

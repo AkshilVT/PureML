@@ -19,7 +19,7 @@ func main() {
 	var ds *impl.Datastore
 	if forTestDb {
 		fmt.Println("Seeding test database")
-		ds = impl.NewSQLiteDatastore("../../tests/data")
+		ds = impl.NewSQLiteDatastore("../../../test/data")
 	} else {
 		ds = impl.NewSQLiteDatastore()
 	}

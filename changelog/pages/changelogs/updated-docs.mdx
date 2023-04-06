@@ -1,0 +1,19 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "updated-docs",
+  publishedAt: "2023-04-03T09:00:00.000Z",
+  title: "Updated PureML documentation",
+  headerImage: "/changelogs/updateddocs.png",
+  authors: [],
+};
+
+**New**
+
+- Complete PureML documentation has been updated. Excited? [Check here](https://pureml.mintlify.app) what's changed.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

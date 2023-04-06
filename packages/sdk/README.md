@@ -10,7 +10,7 @@
 
 <p align="center">
   <a
-    href="https://docs.pureml.com"
+    href="https://pureml.mintlify.app"
   ><b>Documentation</b></a>
   &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
   <a

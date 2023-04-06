@@ -2,7 +2,7 @@ export default function CTASection() {
   return (
     <div className="bg-slate-50 px-4 py-16 md:p-24 h-fit flex flex-col justify-center items-center">
       <div className="md:w-[48rem] lg:w-[64rem] flex flex-col gap-y-6">
-        <h1 className="flex justify-center items-center text-center !leading-snug !text-3xl md:!text-5xl lg:!text-7xl text-brand-200">
+        <h1 className="flex justify-center items-center font-medium text-center !leading-snug !text-3xl md:!text-5xl lg:!text-7xl text-brand-200">
           PureML empowers everyone to work together, and ship with confidence.
         </h1>
         <a

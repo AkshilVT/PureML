@@ -1,0 +1,26 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "review-list",
+  publishedAt: "2023-02-21T09:00:00.000Z",
+  title: "Get list of reviews submitted",
+  headerImage: "/changelogs/reviewlist.png",
+  authors: [],
+};
+
+**New**
+
+- Get notified when saving edited model card and dataset card
+
+**Updated**
+
+- List of Review commits
+- The minimal design of button groups
+- Consistency on right-side panel
+- Focused input fields
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

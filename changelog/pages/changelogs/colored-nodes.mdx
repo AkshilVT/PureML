@@ -1,0 +1,33 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "colored-nodes",
+  publishedAt: "2023-02-15T09:00:00.000Z",
+  title: "Categorizing lineage nodes",
+  headerImage: "/changelogs/colorednodes.png",
+  authors: [],
+};
+
+**New**
+
+- Functionality to join the organization
+- Members of an org in the settings section
+- 3 different variants according to respective decorators of data lineage nodes
+- Successful testing of self-hosted package
+
+**Added**
+
+- Members to Organization details API
+- Locally tested self-hosting package changes
+- Role to Org details API
+
+**Fixes**
+
+- Storage, Dataset & Model Logs APIs
+- Join Organization API
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

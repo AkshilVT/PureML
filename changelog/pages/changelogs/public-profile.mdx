@@ -1,0 +1,34 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "public-profile",
+  publishedAt: "2023-02-02T09:00:00.000Z",
+  title: "Share your publc profile link",
+  headerImage: "/changelogs/publicprofile.png",
+  authors: [],
+};
+
+**New**
+
+- Ability of branches to models & datasets.
+- Organization page with organization details such as models and datasets.
+- Public user profile.
+
+**Added**
+
+- Quick links to models and datasets in Navbar.
+
+**Updated**
+
+- Backend migrated to Go
+- New theme of application
+
+**Removed**
+
+- Projects entity removed and added functionality to models and datasets.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

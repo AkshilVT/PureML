@@ -1,0 +1,23 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "why-pureml",
+  publishedAt: "2023-03-28T09:00:00.000Z",
+  title: "Read more about us with Why PureML page",
+  headerImage: "/changelogs/whypureml.png",
+  authors: [],
+};
+
+**New**
+
+- Know more about pureml through Why PureML page.
+
+**Update**
+
+- Reach out to us by [filling this form](https://tally.so/r/wa96xv) if you want to get listed on our ML Tools page.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

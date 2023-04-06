@@ -1,0 +1,32 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "list-of-orgs",
+  publishedAt: "2023-02-08T09:00:00.000Z",
+  title: "Create, List & Join Orgs",
+  headerImage: "/changelogs/listorgs.png",
+  authors: [],
+};
+
+**New**
+
+- Options to get a list of organizations, create an org & join an org
+- The ability to create organization by logged-in user
+
+**Added**
+
+- Navbar in logout & contact us page
+
+**Fixed**
+
+- Access to the logout & contact us page is restricted for anonymous users
+
+**Removed**
+
+- Unwanted scroller from the list of versions in models & datasets
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

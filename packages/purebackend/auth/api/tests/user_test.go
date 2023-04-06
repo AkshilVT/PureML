@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/PureMLHQ/PureML/packages/purebackend/test"
 	"github.com/labstack/echo/v4"
@@ -572,4 +573,359 @@ func TestUpdateProfile(t *testing.T) {
 
 // TODO
 func TestDeleteProfile(t *testing.T) {
+}
+
+func TestCreateSession(t *testing.T) {
+	scenarios := []test.ApiScenario{
+		{
+			Name:   "create session + no device id",
+			Method: http.MethodPost,
+			Url:    "/api/user/create-session",
+			Body: strings.NewReader(`{
+				"device":"",
+				"device_id":"",
+				"device_location":""
+			}`),
+			ExpectedStatus: 400,
+			ExpectedContent: []string{
+				`"status":400`,
+				`"data":null`,
+				`"message":"Device Id is required"`,
+			},
+		},
+		{
+			Name:   "create session successful",
+			Method: http.MethodPost,
+			Url:    "/api/user/create-session",
+			Body: strings.NewReader(`{
+				"device":"mydevice",
+				"device_id":"123",
+				"device_location":"India"
+			}`),
+			ExpectedStatus: 200,
+			ExpectedContent: []string{
+				`"status":200`,
+				`"data":[{`,
+				`"session_id":"`,
+				`"created_at":"`,
+				`"message":"Session created"`,
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestGetSessionToken(t *testing.T) {
+	scenarios := []test.ApiScenario{
+		{
+			Name:   "get session token + no session id",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"",
+				"device":"",
+				"device_id":"",
+				"device_location":""
+			}`),
+			ExpectedStatus: 400,
+			ExpectedContent: []string{
+				`"status":400`,
+				`"data":null`,
+				`"message":"Session Id is required"`,
+			},
+		},
+		{
+			Name:   "get session token + no device id",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `",
+				"device":"",
+				"device_id":"",
+				"device_location":""
+			}`),
+			ExpectedStatus: 400,
+			ExpectedContent: []string{
+				`"status":400`,
+				`"data":null`,
+				`"message":"Device Id is required"`,
+			},
+		},
+		{
+			Name:   "get session token + not found",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidNoSessionUuid.String() + `",
+				"device":"device",
+				"device_id":"123456",
+				"device_location":"India"
+			}`),
+			ExpectedStatus: 404,
+			ExpectedContent: []string{
+				`"status":404`,
+				`"data":null`,
+				`"message":"Session not found"`,
+			},
+		},
+		{
+			Name:   "get session token + not approved",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `",
+				"device":"device",
+				"device_id":"123456",
+				"device_location":"India"
+			}`),
+			ExpectedStatus: 401,
+			ExpectedContent: []string{
+				`"status":401`,
+				`"data":null`,
+				`"message":"Session not approved"`,
+			},
+		},
+		{
+			Name:   "get session token + invalid session",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `",
+				"device":"device",
+				"device_id":"123456",
+				"device_location":"India"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"approved": true,
+					"invalid":  true,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 403,
+			ExpectedContent: []string{
+				`"status":403`,
+				`"data":null`,
+				`"message":"Session invalid"`,
+			},
+		},
+		{
+			Name:   "get session token + invalid session device",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `",
+				"device":"device",
+				"device_id":"not123456",
+				"device_location":"India"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"approved": true,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 403,
+			ExpectedContent: []string{
+				`"status":403`,
+				`"data":null`,
+				`"message":"Session invalid device"`,
+			},
+		},
+		{
+			Name:   "get session token successful",
+			Method: http.MethodPost,
+			Url:    "/api/user/session-token",
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `",
+				"device":"device",
+				"device_id":"123456",
+				"device_location":"India"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"approved": true,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 200,
+			ExpectedContent: []string{
+				`"status":200`,
+				`"data":[{`,
+				`"email":"`,
+				`"accessToken":"`,
+				`"message":"Session Token created"`,
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestVerifySession(t *testing.T) {
+	scenarios := []test.ApiScenario{
+		{
+			Name:           "verify session + unauthorized",
+			Method:         http.MethodPost,
+			Url:            "/api/user/verify-session",
+			ExpectedStatus: 401,
+			ExpectedContent: []string{
+				`Authentication token required`,
+			},
+		},
+		{
+			Name:   "verify session + invalid token",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.InvalidToken,
+			},
+			ExpectedStatus: 403,
+			ExpectedContent: []string{
+				`Could not parse authentication token`,
+			},
+		},
+		{
+			Name:   "verify session + valid token + user not found",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidTokenNoUser,
+			},
+			ExpectedStatus: 404,
+			ExpectedContent: []string{
+				`User not found`,
+			},
+		},
+		{
+			Name:   "verify session + no session id",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidAdminToken,
+			},
+			Body: strings.NewReader(`{
+				"session_id":""
+			}`),
+			ExpectedStatus: 400,
+			ExpectedContent: []string{
+				`"status":400`,
+				`"data":null`,
+				`"message":"Session Id is required"`,
+			},
+		},
+		{
+			Name:   "session verified and approved",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidAdminToken,
+			},
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"approved": true,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 400,
+			ExpectedContent: []string{
+				`"status":400`,
+				`"data":null`,
+				`"message":"Session already approved"`,
+			},
+		},
+		{
+			Name:   "session verified and invalid",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidAdminToken,
+			},
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"invalid": true,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 403,
+			ExpectedContent: []string{
+				`"status":403`,
+				`"data":null`,
+				`"message":"Session invalid"`,
+			},
+		},
+		{
+			Name:   "session verified and expired",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidAdminToken,
+			},
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `"
+			}`),
+			ExpectedStatus: 403,
+			ExpectedContent: []string{
+				`"status":403`,
+				`"data":null`,
+				`"message":"Session expired"`,
+			},
+		},
+		{
+			Name:   "session verified and approved successfully",
+			Method: http.MethodPost,
+			Url:    "/api/user/verify-session",
+			RequestHeaders: map[string]string{
+				"Authorization": test.ValidAdminToken,
+			},
+			Body: strings.NewReader(`{
+				"session_id":"` + test.ValidSessionUuid.String() + `"
+			}`),
+			BeforeTestFunc: func(t *testing.T, app *test.TestApp, e *echo.Echo) {
+				// Make changes to session in db to simulate conditions
+				_, err := app.Dao().UpdateSession(test.ValidSessionUuid, test.ValidAdminUserUuid, map[string]interface{}{
+					"created_at": time.Now().Add(-time.Minute * 5),
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			},
+			ExpectedStatus: 200,
+			ExpectedContent: []string{
+				`"status":200`,
+				`"data":null`,
+				`"message":"Session approved"`,
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
 }

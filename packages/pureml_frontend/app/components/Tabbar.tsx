@@ -50,7 +50,7 @@ export default function TabBar(props: Props) {
     {
       id: "versions",
       name: "Versions",
-      hyperlink: `/org/${orgId}/models/${modelId}/versions/logs`,
+      hyperlink: `/org/${orgId}/models/${modelId}/versions/main/logs`,
     },
     {
       id: "review",
@@ -67,7 +67,7 @@ export default function TabBar(props: Props) {
     {
       id: "versions",
       name: "Versions",
-      hyperlink: `/org/${orgId}/datasets/${datasetId}/versions/datalineage`,
+      hyperlink: `/org/${orgId}/datasets/${datasetId}/versions/main/datalineage`,
     },
     {
       id: "review",
@@ -101,7 +101,7 @@ export default function TabBar(props: Props) {
     {
       id: "metrics",
       name: "User Logs",
-      hyperlink: `/org/${orgId}/models/${modelId}/versions/logs`,
+      hyperlink: `/org/${orgId}/models/${modelId}/versions/main/logs`,
     },
     // {
     //   id: "graphs",
@@ -113,7 +113,7 @@ export default function TabBar(props: Props) {
     {
       id: "datalineage",
       name: "Data Lineage",
-      hyperlink: `/org/${orgId}/datasets/${datasetId}/versions/datalineage`,
+      hyperlink: `/org/${orgId}/datasets/${datasetId}/versions/main/datalineage`,
     },
     // {
     //   id: "code",

@@ -68,7 +68,7 @@ export default function Footer() {
           <div className="flex justify-between md:gap-x-96">
             <div className="flex flex-col justify-between gap-y-2">
               <a
-                href="https://docs.pureml.com"
+                href="https://pureml.mintlify.app"
                 target="_blank"
                 rel="noreferrer"
                 className="underline text-lg xl:text-xl"

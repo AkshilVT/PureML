@@ -22,9 +22,9 @@ type CreateModelBranchRequest struct {
 }
 
 type RegisterModelRequest struct {
-	Hash    string `json:"hash"`
-	Storage string `json:"storage"`
-	IsEmpty bool   `json:"is_empty"`
+	Hash       string `json:"hash"`
+	Storage    string `json:"storage"`
+	IsEmpty    bool   `json:"is_empty"`
 }
 
 type ModelReviewRequest struct {
@@ -85,15 +85,16 @@ type ModelBranchVersionNameResponse struct {
 }
 
 type ModelBranchVersionResponse struct {
-	UUID      uuid.UUID                        `json:"uuid"`
-	Version   string                           `json:"version"`
-	Branch    ModelBranchNameResponse          `json:"branch"`
-	Hash      string                           `json:"hash"`
-	Path      commonmodels.PathResponse        `json:"path"`
-	Logs      []commonmodels.LogDataResponse   `json:"logs"`
-	IsEmpty   bool                             `json:"is_empty"`
-	CreatedBy userorgmodels.UserHandleResponse `json:"created_by"`
-	CreatedAt time.Time                        `json:"created_at"`
+	UUID       uuid.UUID                        `json:"uuid"`
+	Version    string                           `json:"version"`
+	Branch     ModelBranchNameResponse          `json:"branch"`
+	Hash       string                           `json:"hash"`
+	Path       string                           `json:"path"`
+	SourceType string                           `json:"source_type"`
+	Logs       []commonmodels.LogDataResponse   `json:"logs"`
+	IsEmpty    bool                             `json:"is_empty"`
+	CreatedBy  userorgmodels.UserHandleResponse `json:"created_by"`
+	CreatedAt  time.Time                        `json:"created_at"`
 }
 
 type ModelReviewResponse struct {

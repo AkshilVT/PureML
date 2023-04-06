@@ -24,4 +24,6 @@ var (
 	ValidNoOrgUuid        = uuid.Must(uuid.FromString("11111111-2222-3333-4444-111111111111"))
 	ValidAdminUserOrgUuid = uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111"))
 	ValidUserOrgUuid      = uuid.Must(uuid.FromString("22222222-2222-2222-2222-222222222222"))
+	ValidSessionUuid      = uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111"))
+	ValidNoSessionUuid    = uuid.Must(uuid.FromString("11111111-2222-3333-4444-111111111111"))
 )

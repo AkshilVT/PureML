@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Github, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [open, setOpen] = useState(true);
@@ -10,7 +10,7 @@ export default function Navbar() {
           <div className="lg:h-fit w-full md:max-w-screen-xl px-0 md:px-8">
             <div className="sm:px-24">
               <div className="rounded-b-2xl border-b border-slate-200">
-                <div className="flex px-4 py-4 md:px-12 justify-between">
+                <div className="flex px-4 py-5 md:px-12 justify-between items-center">
                   <a href="/">
                     <img
                       src="/PureMLLogoWText.svg"
@@ -20,7 +20,7 @@ export default function Navbar() {
                     />
                   </a>
                   <X
-                    className="sm:hidden text-slate-900 cursor-pointer w-8 h-8"
+                    className="sm:hidden text-slate-950 cursor-pointer w-8 h-8"
                     onClick={() => setOpen(!open)}
                   />
                 </div>
@@ -37,7 +37,7 @@ export default function Navbar() {
                   </div>
                   <div className="flex items-center">
                     <a
-                      href="https://docs.pureml.com"
+                      href="https://changelog.pureml.com"
                       target="_blank"
                       rel="noreferrer"
                       className="w-max letterSpaced"
@@ -47,7 +47,7 @@ export default function Navbar() {
                   </div>
                   <div className="flex items-center">
                     <a
-                      href="https://docs.pureml.com"
+                      href="https://pureml.mintlify.app"
                       target="_blank"
                       rel="noreferrer"
                       className="w-max letterSpaced"
@@ -55,8 +55,10 @@ export default function Navbar() {
                       DOCS
                     </a>
                   </div>
-                  <div className="flex items-center text-brand-200 letterSpaced">
-                    <a href="/auth/signin">SIGN IN</a>
+                  <div className="flex items-center text-brand-200">
+                    <a href="/auth/signin" className="w-max letterSpaced">
+                      SIGN IN
+                    </a>
                   </div>
                 </div>
               </div>
@@ -69,7 +71,7 @@ export default function Navbar() {
     <div className="flex justify-center">
       <div className="flex justify-center w-full backdrop-blur-sm bg-white/30">
         <div className="lg:h-fit w-full md:max-w-screen-xl px-0 md:px-8">
-          <div className="flex p-4 md:px-0 justify-between w-full">
+          <div className="flex p-4 md:px-0 justify-between items-center w-full">
             <a href="/">
               <img
                 src="/PureMLLogoWText.svg"
@@ -81,19 +83,16 @@ export default function Navbar() {
             <div className="md:hidden flex">
               <div className="flex items-center pr-8">
                 <a
-                  className="sm:hidden github-button letterSpaced"
                   href="https://github.com/pureml-inc/pureml"
-                  data-color-scheme="no-preference: dark_dimmed; light: light_high_contrast; dark: light;"
-                  data-size="large"
-                  data-show-count="true"
-                  aria-label="Star pureml-inc/pureml on GitHub"
+                  className="flex gap-x-2 border border-slate-950 rounded-full py-2 px-4 text-brand-200 text-lg letterSpaced hover:bg-slate-100"
                 >
-                  STARS
+                  <Github className="w-5" />
+                  STAR
                 </a>
               </div>
               <div className="flex justify-center items-center">
                 <Menu
-                  className="sm:hidden text-slate-900 cursor-pointer w-8 h-8"
+                  className="sm:hidden text-slate-950 cursor-pointer w-8 h-8"
                   onClick={() => setOpen(!open)}
                 />
               </div>
@@ -117,7 +116,7 @@ export default function Navbar() {
               </div>
               <div className="px-4 flex justify-center items-center">
                 <a
-                  href="https://pureml.notion.site/PureML-Changelog-096f7541dd6245c0a3c244e9f216ad31"
+                  href="https://changelog.pureml.com"
                   className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
                   target="_blank"
                   rel="noreferrer"
@@ -127,7 +126,7 @@ export default function Navbar() {
               </div>
               <div className="px-4 flex justify-center items-center">
                 <a
-                  href="https://docs.pureml.com"
+                  href="https://pureml.mintlify.app"
                   className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
                   target="_blank"
                   rel="noreferrer"
@@ -143,15 +142,12 @@ export default function Navbar() {
                   SIGN IN <ArrowUpRight className="text-brand-200 w-5" />
                 </a>
               </div>
-              <div className="px-4 flex justify-center items-center pt-1">
+              <div className="px-4 flex justify-center items-center">
                 <a
-                  className="github-button flex justify-center items-center gap-y-4 text-brand-200 hover:underline hover:underline-offset-2 text-lg letterSpaced"
                   href="https://github.com/pureml-inc/pureml"
-                  data-color-scheme="no-preference: dark_dimmed; light: light_high_contrast; dark: light;"
-                  data-size="large"
-                  data-show-count="true"
-                  aria-label="Star pureml-inc/pureml on GitHub"
+                  className="flex gap-x-2 border border-slate-950 rounded-full py-2 px-4 text-brand-200 text-lg letterSpaced hover:bg-slate-100"
                 >
+                  <Github className="w-5" />
                   STAR
                 </a>
               </div>

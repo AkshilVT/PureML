@@ -82,7 +82,7 @@ type SiteConfig struct {
 // func (s *Settings) LoadFromDB(dao *daos.Dao, source string) error {
 // 	source = strings.ToUpper(source)
 // 	defaultUUID := uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111"))
-// 	sourceSecrets, err := dao.GetSourceSecret(defaultUUID, source)
+// 	sourceSecrets, err := dao.GetSecretByName(defaultUUID, source)
 // 	if err != nil {
 // 		return err
 // 	}

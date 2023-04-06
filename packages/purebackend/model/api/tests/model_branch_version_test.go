@@ -392,6 +392,7 @@ func TestVerifyModelBranchHashStatus(t *testing.T) {
 	}
 }
 
+// TODO
 func TestRegisterModel(t *testing.T) {
 	emptyHashMultipartBody, emptyHashMultipartContentType, err := test.MockMultipartData(map[string]string{
 		"hash":     "",

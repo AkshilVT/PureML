@@ -12,33 +12,137 @@ func ValidateMailAddress(address string) (string, bool) {
 
 func BaseEmailTemplate(title, body string) string {
 	return `
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-		<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-			<head>
-				<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<meta name="format-detection" content="telephone=no"/>
-				<title>` + title + `</title>
-				<style type="text/css">
-					/* Resets: see reset.css for details */
-					.ReadMsgBody { width: 100%; background-color: #ffffff;}
-					.ExternalClass {width: 100%; background-color: #ffffff;}
-					body {width: 100%; background-color: #ffffff; margin:0; padding:0; -webkit-font-smoothing: antialiased; font-family: Arial, Helvetica, sans-serif;}
-					table {border-collapse: collapse;}
-	
-					@media only screen and (max-width: 640px)  {
-						body[yahoo] .deviceWidth {width:440px!important; padding:0;}
-						body[yahoo] .center {text-align: center!important;}
-					}
-					@media only screen and (max-width: 479px) {
-						body[yahoo] .deviceWidth {width:280px!important; padding:0;}
-						body[yahoo] .center {text-align: center!important;}
-					}
-				</style>
-			</head>
-			<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" yahoo="fix" style="margin: 0px; padding: 0px; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; font-family: Arial, Helvetica, sans-serif;">
-				` + body + `
-			</body>
-		</html>
+		<!DOCTYPE html>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+			<title>` + title + `</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com/">
+			<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+			<style type="text/css">
+			.button:active {
+				border-style: outset;
+			}
+			</style>
+		<style data-jss="" data-meta="MuiDialog">
+		@media print {
+		.MuiDialog-root {
+			position: absolute !important;
+		}
+		}
+		.MuiDialog-scrollPaper {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		}
+		.MuiDialog-scrollBody {
+		overflow-x: hidden;
+		overflow-y: auto;
+		text-align: center;
+		}
+		.MuiDialog-scrollBody:after {
+		width: 0;
+		height: 100%;
+		content: "";
+		display: inline-block;
+		vertical-align: middle;
+		}
+		.MuiDialog-container {
+		height: 100%;
+		outline: 0;
+		}
+		@media print {
+		.MuiDialog-container {
+			height: auto;
+		}
+		}
+		.MuiDialog-paper {
+		margin: 32px;
+		position: relative;
+		overflow-y: auto;
+		}
+		@media print {
+		.MuiDialog-paper {
+			box-shadow: none;
+			overflow-y: visible;
+		}
+		}
+		.MuiDialog-paperScrollPaper {
+		display: flex;
+		max-height: calc(100% - 64px);
+		flex-direction: column;
+		}
+		.MuiDialog-paperScrollBody {
+		display: inline-block;
+		text-align: left;
+		vertical-align: middle;
+		}
+		.MuiDialog-paperWidthFalse {
+		max-width: calc(100% - 64px);
+		}
+		.MuiDialog-paperWidthXs {
+		max-width: 444px;
+		}
+		@media (max-width:507.95px) {
+		.MuiDialog-paperWidthXs.MuiDialog-paperScrollBody {
+			max-width: calc(100% - 64px);
+		}
+		}
+		.MuiDialog-paperWidthSm {
+		max-width: 600px;
+		}
+		@media (max-width:663.95px) {
+		.MuiDialog-paperWidthSm.MuiDialog-paperScrollBody {
+			max-width: calc(100% - 64px);
+		}
+		}
+		.MuiDialog-paperWidthMd {
+		max-width: 960px;
+		}
+		@media (max-width:1023.95px) {
+		.MuiDialog-paperWidthMd.MuiDialog-paperScrollBody {
+			max-width: calc(100% - 64px);
+		}
+		}
+		.MuiDialog-paperWidthLg {
+		max-width: 1280px;
+		}
+		@media (max-width:1343.95px) {
+		.MuiDialog-paperWidthLg.MuiDialog-paperScrollBody {
+			max-width: calc(100% - 64px);
+		}
+		}
+		.MuiDialog-paperWidthXl {
+		max-width: 1920px;
+		}
+		@media (max-width:1983.95px) {
+		.MuiDialog-paperWidthXl.MuiDialog-paperScrollBody {
+			max-width: calc(100% - 64px);
+		}
+		}
+		.MuiDialog-paperFullWidth {
+		width: calc(100% - 64px);
+		}
+		.MuiDialog-paperFullScreen {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		max-width: 100%;
+		max-height: none;
+		border-radius: 0;
+		}
+		.MuiDialog-paperFullScreen.MuiDialog-paperScrollBody {
+		margin: 0;
+		max-width: 100%;
+		}
+		</style></head>
+		<body style="
+			font-family: IBM Plex Sans;
+			color: #475569;
+			display: flex;
+			justify-content: center;
+			padding-top: 16px;
+			">
+			` + body + `
+		</body>
+	</html>
 	`
 }

@@ -1,0 +1,25 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "theme-change",
+  publishedAt: "2023-02-27T09:00:00.000Z",
+  title: "Theme changed",
+  headerImage: "/changelogs/themechange.png",
+  authors: [],
+};
+
+**Added**
+
+- Max widths to all screen resolutions.
+- Empty states of model cards and dataset cards
+
+**Updated**
+
+- Font weights & font color for active states of tabs, buttons and inputs.
+- Theme of app replacing white theme.
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

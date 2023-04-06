@@ -1,0 +1,32 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "log-file",
+  publishedAt: "2023-03-15T09:00:00.000Z",
+  title: "Log file API for logs",
+  headerImage: "/changelogs/logfile.png",
+  authors: [],
+};
+
+**New**
+
+- Log FIle API to log any number of multipart files (images/txt/.../whatever) to a dataset or model
+- Model/Dataset Branch version and log tests covered
+
+**Fixed**
+
+- Review API migrates logs along with the dataset/model version data
+- Project structure was revamped for better modularity of different services for future possible seperation
+- Docker: Official frontend and backend images for self-hosting pureml as a service using docker-compose
+
+  [Backend](https://hub.docker.com/r/puremlhq/pureml_backend)
+
+  [Frontend](https://hub.docker.com/r/puremlhq/pureml_frontend)
+
+  [Docker-Compose](https://github.com/PureMLHQ/PureML/blob/main/packages/pureml_docker/docker-compose.yml)
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

@@ -1,0 +1,25 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "auth-verification",
+  publishedAt: "2023-02-18T09:00:00.000Z",
+  title: "Verification emails for authentication",
+  headerImage: "/changelogs/authverify.png",
+  authors: [],
+};
+
+**New**
+
+- Email service to application for
+  - User email verification while signing up (with resend verification mail API)
+  - Forgot & Reset password APIs (using email token verification)
+
+**Fixes**
+
+- Package import issue using go get fixed
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

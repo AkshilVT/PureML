@@ -49,10 +49,11 @@ type ModelVersion struct {
 	IsEmpty                  bool          `json:"is_empty"`
 	BranchUUID               uuid.UUID     `json:"branch_uuid" gorm:"type:uuid;not null;index:idx_model_branch_version,unique;index:idx_model_branch_hash,unique"`
 	PathUUID                 uuid.NullUUID `json:"path_uuid" gorm:"type:uuid;"`
+	Path                     string        `json:"path"`
+	SourceType               string        `json:"source_type"`
 	CreatedBy                uuid.UUID     `json:"created_by" gorm:"type:uuid;"`
 
 	Branch        ModelBranch          `gorm:"foreignKey:BranchUUID"`
-	Path          userorgdbmodels.Path `gorm:"foreignKey:PathUUID"`
 	CreatedByUser userorgdbmodels.User `gorm:"foreignKey:CreatedBy"`
 }
 

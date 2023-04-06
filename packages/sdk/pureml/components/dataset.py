@@ -6,13 +6,17 @@ import joblib
 import pandas as pd
 import requests
 
-from pureml.schema import DatasetSchema, StorageSchema
+from pureml.schema import DatasetSchema, StorageSchema, ConfigKeys
 from pureml.utils.hash import generate_hash_for_file
 from pureml.utils.readme import load_readme
 from rich import print
 
 from . import get_org_id, get_token
 from pureml.utils.version_utils import parse_version_label
+from pureml.utils.config import reset_config
+
+config_keys = ConfigKeys
+storage = StorageSchema().get_instance()
 
 
 def init_branch(label: str):
@@ -272,13 +276,7 @@ def save_dataset(dataset, name: str):
     return save_path
 
 
-def register(
-    dataset,
-    label: str,
-    lineage,
-    is_empty: bool = False,
-    storage: str = StorageSchema().STORAGE,
-) -> str:
+def register(dataset, label: str, lineage, is_empty: bool = False) -> str:
     """The function takes in a dataset, a name and a version and saves the dataset locally, then uploads the
     dataset to the PureML server
 
@@ -360,7 +358,7 @@ def register(
             "hash": dataset_hash,
             "lineage": lineage,
             "is_empty": is_empty,
-            "storage": storage,
+            "storage": storage.STORAGE,
         }
 
         # data = json.dumps(data)
@@ -378,6 +376,8 @@ def register(
                     print(f"[bold green]Lineage has been registered!")
                 else:
                     print(f"[bold green]Dataset and lineage have been registered!")
+
+                # reset_config(key=config_keys.dataset.value)
 
             except Exception as e:
                 print(
@@ -529,10 +529,12 @@ def fetch(label: str):
         print("[bold orange]Dataset file is not registered to the version")
         return
 
-    storage_path = dataset_details["path"]["source_path"]
-    storage_source_type = dataset_details["path"]["source_type"]["public_url"]
+    # storage_path = dataset_details["path"]["source_path"]
+    # storage_source_type = dataset_details["path"]["source_type"]["public_url"]
 
-    dataset_url = urljoin(storage_source_type, storage_path)
+    # dataset_url = urljoin(storage_source_type, storage_path)
+
+    dataset_url = dataset_details["path"]
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",

@@ -1,0 +1,28 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "error-handling",
+  publishedAt: "2023-02-11T09:00:00.000Z",
+  title: "Better error handling of each page",
+  headerImage: "/changelogs/errorhandling.png",
+  authors: [],
+};
+
+**New**
+
+- Better error handling for each page throughout the app
+- Update profile settings
+
+**Added**
+
+- Visible password fields
+
+**Updated**
+
+- Forms with tailwind forms
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

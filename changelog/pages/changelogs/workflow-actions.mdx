@@ -1,0 +1,24 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "workflow-actions",
+  publishedAt: "2023-02-13T09:00:00.000Z",
+  title: "Github workflow actions",
+  headerImage: "/changelogs/workflowactions.png",
+  authors: [],
+};
+
+**New**
+
+- Added GitHub workflow actions for building and linting the backend with docs
+- The backend in Go migrated to the main branch
+
+**Added**
+
+- Tests are written for the user, org APIs
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

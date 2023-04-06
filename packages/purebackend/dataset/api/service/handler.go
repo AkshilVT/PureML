@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	coreservice "github.com/PureMLHQ/PureML/packages/purebackend/core/apis/service"
+	commonmodels "github.com/PureMLHQ/PureML/packages/purebackend/core/common/models"
 	"github.com/PureMLHQ/PureML/packages/purebackend/core/models"
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
@@ -45,45 +46,17 @@ func populateErrorResponse(context echo.Context, response *models.Response, resp
 	}
 }
 
-func (api *Api) ValidateAndGetOrCreateSourceType(datasetSourceType string, orgId uuid.UUID) (uuid.UUID, *models.Response) {
-	var sourceTypeUUID uuid.UUID
+func (api *Api) ValidateSourceTypeAndGetSourceSecrets(datasetSourceSecretName string, orgId uuid.UUID) (*commonmodels.SourceSecrets, *models.Response) {
+	var sourceSecrets *commonmodels.SourceSecrets
 	var err error
-	datasetSourceType = strings.ToUpper(datasetSourceType)
-	if datasetSourceType == "PUREML-STORAGE" {
-		sourceTypeUUID, err = api.app.Dao().GetSourceTypeByName(uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111")), datasetSourceType)
-		if sourceTypeUUID == uuid.Nil || err != nil {
-			return uuid.Nil, models.NewErrorResponse(http.StatusBadRequest, fmt.Sprintf("Source %s not connected properly to organization", datasetSourceType))
-		}
+	if strings.ToUpper(datasetSourceSecretName) == "PUREML-STORAGE" {
+		sourceSecrets, err = api.app.Dao().GetSecretByName(uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111")), "admin")
+		sourceSecrets.SourceType = "PUREML-STORAGE"
 	} else {
-		sourceTypeUUID, err = api.app.Dao().GetSourceTypeByName(orgId, datasetSourceType)
-		if err != nil {
-			return uuid.Nil, models.NewErrorResponse(http.StatusBadRequest, fmt.Sprintf("Source %s not connected properly to organization", datasetSourceType))
-		}
-		if sourceTypeUUID == uuid.Nil {
-			if datasetSourceType == "S3" && api.app.Settings().S3.Enabled {
-				publicUrl := fmt.Sprintf("https://%s.%s", api.app.Settings().S3.Bucket, api.app.Settings().S3.Endpoint)
-				sourceType, err := api.app.Dao().CreateS3Source(orgId, publicUrl)
-				if err != nil {
-					return uuid.Nil, models.NewServerErrorResponse(err)
-				}
-				sourceTypeUUID = sourceType.UUID
-			} else if datasetSourceType == "R2" && api.app.Settings().R2.Enabled {
-				publicUrl := fmt.Sprintf("https://%s/%s", api.app.Settings().R2.Endpoint, api.app.Settings().R2.Bucket)
-				sourceType, err := api.app.Dao().CreateR2Source(orgId, publicUrl)
-				if err != nil {
-					return uuid.Nil, models.NewServerErrorResponse(err)
-				}
-				sourceTypeUUID = sourceType.UUID
-			} else if datasetSourceType == "LOCAL" {
-				sourceType, err := api.app.Dao().CreateLocalSource(orgId)
-				if err != nil {
-					return uuid.Nil, models.NewServerErrorResponse(err)
-				}
-				sourceTypeUUID = sourceType.UUID
-			} else {
-				return uuid.Nil, models.NewErrorResponse(http.StatusBadRequest, fmt.Sprintf("%s source not enabled", datasetSourceType))
-			}
-		}
+		sourceSecrets, err = api.app.Dao().GetSecretByName(orgId, datasetSourceSecretName)
 	}
-	return sourceTypeUUID, nil
+	if sourceSecrets == nil || err != nil {
+		return nil, models.NewErrorResponse(http.StatusBadRequest, fmt.Sprintf("Source %s not connected properly to organization", datasetSourceSecretName))
+	}
+	return sourceSecrets, nil
 }

@@ -4,13 +4,13 @@ import LandingPgTab from "./Tabs";
 export default function VersionSection() {
   return (
     <div className="h-fit flex flex-col gap-y-6 pt-16 md:py-16">
-      <h1 className="flex items-center text-3xl md:text-4xl lg:text-5xl !text-slate-400">
+      <h1 className="flex font-medium items-center text-3xl md:text-4xl lg:text-5xl !text-slate-400">
         01
       </h1>
       <div className="flex flex-col gap-y-6 md:gap-y-12 text-slate-600">
         <div className="flex flex-col gap-y-8">
           <div className="md:w-3/4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl pb-2">
+            <h1 className="font-medium text-3xl md:text-4xl lg:text-5xl pb-2">
               PureML-version
             </h1>
           </div>
@@ -22,9 +22,9 @@ export default function VersionSection() {
               </h2>
               <div className="flex flex-col gap-y-4">
                 <div className="flex flex-col gap-y-2">
-                  <h2 className="text-slate-800 text-lg md:text-xl lg:text-2xl font-medium">
+                  <div className="text-slate-950 text-lg md:text-xl lg:text-2xl font-medium">
                     Install
-                  </h2>
+                  </div>
                   <h2 className="text-lg md:text-xl lg:text-2xl">
                     Getting started is simple
                   </h2>
@@ -40,9 +40,9 @@ export default function VersionSection() {
                 </div>
               </div>
               <div className="flex flex-col gap-y-2">
-                <h2 className="text-slate-800 text-lg md:text-xl lg:text-2xl font-medium">
+                <div className="text-slate-950 text-lg md:text-xl lg:text-2xl font-medium">
                   Dataset
-                </h2>
+                </div>
                 <h2 className="text-lg md:text-xl lg:text-2xl">
                   Simply use our decorator{" "}
                   <span className="bg-slate-200 px-2 py-1 text-lg md:text-xl lg:text-2xl">
@@ -53,9 +53,9 @@ export default function VersionSection() {
               </div>
               <div className="flex flex-col gap-y-6">
                 <div className="flex flex-col gap-y-2">
-                  <h2 className="text-slate-800 text-lg md:text-xl lg:text-2xl font-medium">
+                  <div className="text-slate-950 text-lg md:text-xl lg:text-2xl font-medium">
                     Model
-                  </h2>
+                  </div>
                   <h2 className="text-lg md:text-xl lg:text-2xl">
                     Use{" "}
                     <span className="bg-slate-200 px-2 py-1 text-lg md:text-xl lg:text-2xl">
@@ -66,7 +66,7 @@ export default function VersionSection() {
                   </h2>
                 </div>
                 <a
-                  href="https://docs.pureml.com"
+                  href="https://pureml.mintlify.app"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -184,7 +184,7 @@ def train_model(train_ds, val_ds):
         </div>
         <div className="flex flex-col md:flex-row justify-between text-xl gap-y-6 gap-x-12">
           <div className="w-full">
-            <h1 className="text-3xl pb-1 font-medium flex gap-x-3">
+            <h1 className="text-slate-950 text-3xl pb-1 font-medium flex gap-x-3">
               <img
                 src="/imgs/landingPage/icons/FlashIcon.svg"
                 alt="FlashIcon"
@@ -198,7 +198,7 @@ def train_model(train_ds, val_ds):
             </h2>
           </div>
           <div className="w-full">
-            <h1 className="text-3xl pb-1 font-medium flex gap-x-3">
+            <h1 className="text-slate-950 text-3xl pb-1 font-medium flex gap-x-3">
               <img
                 src="/imgs/landingPage/icons/ScalableIcon.svg"
                 alt="ScalableIcon"
@@ -212,7 +212,7 @@ def train_model(train_ds, val_ds):
             </h2>
           </div>
           <div className="w-full">
-            <h1 className="text-3xl pb-1 font-medium flex gap-x-3">
+            <h1 className="text-slate-950 text-3xl pb-1 font-medium flex gap-x-3">
               <img
                 src="/imgs/landingPage/icons/FlexibleIcon.svg"
                 alt="FlexibleIcon"

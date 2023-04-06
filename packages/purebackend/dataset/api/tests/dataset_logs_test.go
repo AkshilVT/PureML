@@ -392,3 +392,8 @@ func TestLogDataset(t *testing.T) {
 		scenario.Test(t)
 	}
 }
+
+// TODO
+func TestLogFileDataset(t *testing.T) {
+
+}

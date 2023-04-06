@@ -17,58 +17,61 @@ func BindSecretsApi(app core.App, rg *echo.Group) {
 	api := Api{app: app}
 
 	secretGroup := rg.Group("/org/:orgId/secret", authmiddlewares.RequireAuthContext, orgmiddlewares.ValidateOrg(api.app))
-	// secretGroup.GET("/all", api.DefaultHandler(GetAllSecrets))
-	// secretGroup.GET("/r2", api.DefaultHandler(GetR2Secret))
-	// secretGroup.POST("/r2/connect", api.DefaultHandler(ConnectR2Secret))
-	secretGroup.GET("/r2/test", api.DefaultHandler(TestR2Secret))
-	// secretGroup.DELETE("/r2/delete", api.DefaultHandler(DeleteR2Secrets))
-	// secretGroup.GET("/s3", api.DefaultHandler(GetS3Secret))
-	// secretGroup.POST("/s3/connect", api.DefaultHandler(ConnectS3Secret))
-	secretGroup.GET("/s3/test", api.DefaultHandler(TestS3Secret))
-	// secretGroup.DELETE("/s3/delete", api.DefaultHandler(DeleteS3Secrets))
+	secretGroup.GET("", api.DefaultHandler(GetAllSecrets))
+	secretGroup.GET("/:secretName", api.DefaultHandler(GetSecret))
+	secretGroup.POST("/r2/connect", api.DefaultHandler(ConnectR2Secret))
+	secretGroup.GET("/r2/:secretName/test", api.DefaultHandler(TestR2Secret))
+	secretGroup.POST("/s3/connect", api.DefaultHandler(ConnectS3Secret))
+	secretGroup.GET("/s3/:secretName/test", api.DefaultHandler(TestS3Secret))
+	secretGroup.DELETE("/:secretName/delete", api.DefaultHandler(DeleteSecrets))
 }
 
-// GetR2Secret godoc
+// GetAllSecrets godoc
 //
 //	@Security		ApiKeyAuth
-//	@Summary		Get secrets for source type r2
-//	@Description	Get secrets for source type r2
+//	@Summary		Get all secretnames of organization
+//	@Description	Get all secretnames of organization
 //	@Tags			Secret
 //	@Accept			*/*
 //	@Produce		json
 //	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/r2 [get]
+//	@Router			/org/{orgId}/secret [get]
 //	@Param			orgId	path	string	true	"Organization Id"
-// func (api *Api) GetR2Secret(request *models.Request) *models.Response {
-// 	orgId := request.GetOrgId()
-// 	result, err := api.app.Dao().GetSourceSecret(orgId, "R2")
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	response := models.NewDataResponse(http.StatusOK, result, "R2 secrets")
-// 	return response
-// }
+func (api *Api) GetAllSecrets(request *models.Request) *models.Response {
+	orgId := request.GetOrgId()
+	result, err := api.app.Dao().GetOrganizationSecrets(orgId)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	response := models.NewDataResponse(http.StatusOK, result, "Organization secrets")
+	return response
+}
 
-// GetS3Secret godoc
+// GetSecret godoc
 //
 //	@Security		ApiKeyAuth
-//	@Summary		Get secrets for source type s3
-//	@Description	Get secrets for source type s3
+//	@Summary		Get secrets for secret name
+//	@Description	Get secrets for secret name
 //	@Tags			Secret
 //	@Accept			*/*
 //	@Produce		json
 //	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/s3 [get]
-//	@Param			orgId	path	string	true	"Organization Id"
-// func (api *Api) GetS3Secret(request *models.Request) *models.Response {
-// 	orgId := request.GetOrgId()
-// 	result, err := api.app.Dao().GetSourceSecret(orgId, "S3")
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	response := models.NewDataResponse(http.StatusOK, result, "S3 secrets")
-// 	return response
-// }
+//	@Router			/org/{orgId}/secret/{secretName} [get]
+//	@Param			orgId		path	string	true	"Organization Id"
+//	@Param			secretName	path	string	true	"Secret Name"
+func (api *Api) GetSecret(request *models.Request) *models.Response {
+	orgId := request.GetOrgId()
+	secretName := request.GetPathParam("secretName")
+	if secretName == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret name cannot be empty")
+	}
+	result, err := api.app.Dao().GetSecretByName(orgId, secretName)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	response := models.NewDataResponse(http.StatusOK, result, fmt.Sprintf("%s secrets", secretName))
+	return response
+}
 
 // ConnectR2Secret godoc
 //
@@ -82,64 +85,63 @@ func BindSecretsApi(app core.App, rg *echo.Group) {
 //	@Router			/org/{orgId}/secret/r2/connect [post]
 //	@Param			orgId	path	string					true	"Organization Id"
 //	@Param			secret	body	models.R2SecretRequest	true	"Secret"
-// func (api *Api) ConnectR2Secret(request *models.Request) *models.Response {
-// 	request.ParseJsonBody()
-// 	orgId := request.GetOrgId()
-// 	accountId := request.GetParsedBodyAttribute("account_id")
-// 	if accountId == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Account Id not found in request body")
-// 	} else if accountId.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Account Id cannot be empty")
-// 	}
-// 	accountIdData := accountId.(string)
-// 	accessKeyId := request.GetParsedBodyAttribute("access_key_id")
-// 	if accessKeyId == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id not found in request body")
-// 	} else if accessKeyId.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id cannot be empty")
-// 	}
-// 	accessKeyIdData := accessKeyId.(string)
-// 	accessKeySecret := request.GetParsedBodyAttribute("access_key_secret")
-// 	if accessKeySecret == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret not found in request body")
-// 	} else if accessKeySecret.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret cannot be empty")
-// 	}
-// 	accessKeySecretData := accessKeySecret.(string)
-// 	bucketName := request.GetParsedBodyAttribute("bucket_name")
-// 	if bucketName == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name not found in request body")
-// 	} else if bucketName.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name cannot be empty")
-// 	}
-// 	bucketNameData := bucketName.(string)
-// 	publicURL := request.GetParsedBodyAttribute("public_url")
-// 	if publicURL == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Public URL not found in request body")
-// 	} else if publicURL.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Public URL cannot be empty")
-// 	}
-// 	publicURLData := publicURL.(string)
-// 	// Delete existing secrets
-// 	err := api.app.Dao().DeleteR2Secrets(orgId)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	// Create new secrets
-// 	createdR2Secret, err := api.app.Dao().CreateR2Secrets(orgId, accountIdData, accessKeyIdData, accessKeySecretData, bucketNameData, publicURLData)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	err = createdR2Secret.CreateBucketIfNotExists()
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	createdSource, err := api.app.Dao().CreateR2Source(orgId, publicURLData)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	return models.NewDataResponse(http.StatusOK, createdSource, "R2 connected successfully")
-// }
+func (api *Api) ConnectR2Secret(request *models.Request) *models.Response {
+	request.ParseJsonBody()
+	orgId := request.GetOrgId()
+	secretName := request.GetParsedBodyAttribute("secret_name")
+	if secretName == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret Name not found in request body")
+	} else if secretName.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret Name cannot be empty")
+	}
+	secretNameData := secretName.(string)
+	accountId := request.GetParsedBodyAttribute("account_id")
+	if accountId == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Account Id not found in request body")
+	} else if accountId.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Account Id cannot be empty")
+	}
+	accountIdData := accountId.(string)
+	accessKeyId := request.GetParsedBodyAttribute("access_key_id")
+	if accessKeyId == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id not found in request body")
+	} else if accessKeyId.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id cannot be empty")
+	}
+	accessKeyIdData := accessKeyId.(string)
+	accessKeySecret := request.GetParsedBodyAttribute("access_key_secret")
+	if accessKeySecret == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret not found in request body")
+	} else if accessKeySecret.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret cannot be empty")
+	}
+	accessKeySecretData := accessKeySecret.(string)
+	bucketName := request.GetParsedBodyAttribute("bucket_name")
+	if bucketName == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name not found in request body")
+	} else if bucketName.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name cannot be empty")
+	}
+	bucketNameData := bucketName.(string)
+	publicURL := request.GetParsedBodyAttribute("public_url")
+	if publicURL == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Public URL not found in request body")
+	} else if publicURL.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Public URL cannot be empty")
+	}
+	publicURLData := publicURL.(string)
+	// Delete existing secrets
+	err := api.app.Dao().DeleteSecrets(orgId, secretNameData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	// Create new secrets
+	createdR2Secret, err := api.app.Dao().CreateR2Secrets(orgId, secretNameData, accountIdData, accessKeyIdData, accessKeySecretData, bucketNameData, publicURLData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	return models.NewDataResponse(http.StatusOK, createdR2Secret, "R2 secrets added successfully")
+}
 
 // ConnectS3Secret godoc
 //
@@ -153,57 +155,56 @@ func BindSecretsApi(app core.App, rg *echo.Group) {
 //	@Router			/org/{orgId}/secret/s3/connect [post]
 //	@Param			orgId	path	string					true	"Organization Id"
 //	@Param			secret	body	models.S3SecretRequest	true	"Secret"
-// func (api *Api) ConnectS3Secret(request *models.Request) *models.Response {
-// 	request.ParseJsonBody()
-// 	orgId := request.GetOrgId()
-// 	accessKeyId := request.GetParsedBodyAttribute("access_key_id")
-// 	if accessKeyId == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id not found in request body")
-// 	} else if accessKeyId.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id cannot be empty")
-// 	}
-// 	accessKeyIdData := accessKeyId.(string)
-// 	accessKeySecret := request.GetParsedBodyAttribute("access_key_secret")
-// 	if accessKeySecret == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret not found in request body")
-// 	} else if accessKeySecret.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret cannot be empty")
-// 	}
-// 	accessKeySecretData := accessKeySecret.(string)
-// 	bucketName := request.GetParsedBodyAttribute("bucket_name")
-// 	if bucketName == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name not found in request body")
-// 	} else if bucketName.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name cannot be empty")
-// 	}
-// 	bucketNameData := bucketName.(string)
-// 	bucketLocation := request.GetParsedBodyAttribute("bucket_location")
-// 	if bucketLocation == nil {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Public URL not found in request body")
-// 	} else if bucketLocation.(string) == "" {
-// 		return models.NewErrorResponse(http.StatusBadRequest, "Public URL cannot be empty")
-// 	}
-// 	bucketLocationData := bucketLocation.(string)
-// 	// Delete existing secrets
-// 	err := api.app.Dao().DeleteS3Secrets(orgId)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	// Create new secrets
-// 	createdS3Secret, err := api.app.Dao().CreateS3Secrets(orgId, accessKeyIdData, accessKeySecretData, bucketNameData, bucketLocationData)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	err = createdS3Secret.CreateBucketIfNotExists()
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	createdSource, err := api.app.Dao().CreateS3Source(orgId, createdS3Secret.PublicURL)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	return models.NewDataResponse(http.StatusOK, createdSource, "S3 connected successfully")
-// }
+func (api *Api) ConnectS3Secret(request *models.Request) *models.Response {
+	request.ParseJsonBody()
+	orgId := request.GetOrgId()
+	secretName := request.GetParsedBodyAttribute("secret_name")
+	if secretName == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret Name not found in request body")
+	} else if secretName.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret Name cannot be empty")
+	}
+	secretNameData := secretName.(string)
+	accessKeyId := request.GetParsedBodyAttribute("access_key_id")
+	if accessKeyId == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id not found in request body")
+	} else if accessKeyId.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Id cannot be empty")
+	}
+	accessKeyIdData := accessKeyId.(string)
+	accessKeySecret := request.GetParsedBodyAttribute("access_key_secret")
+	if accessKeySecret == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret not found in request body")
+	} else if accessKeySecret.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Access Key Secret cannot be empty")
+	}
+	accessKeySecretData := accessKeySecret.(string)
+	bucketName := request.GetParsedBodyAttribute("bucket_name")
+	if bucketName == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name not found in request body")
+	} else if bucketName.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket name cannot be empty")
+	}
+	bucketNameData := bucketName.(string)
+	bucketLocation := request.GetParsedBodyAttribute("bucket_location")
+	if bucketLocation == nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket location not found in request body")
+	} else if bucketLocation.(string) == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Bucket location cannot be empty")
+	}
+	bucketLocationData := bucketLocation.(string)
+	// Delete existing secrets
+	err := api.app.Dao().DeleteSecrets(orgId, secretNameData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	// Create new secrets
+	createdS3Secret, err := api.app.Dao().CreateS3Secrets(orgId, secretNameData, accessKeyIdData, accessKeySecretData, bucketNameData, bucketLocationData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	return models.NewDataResponse(http.StatusOK, createdS3Secret, "S3 secrets added successfully")
+}
 
 // TestR2Secret godoc
 //
@@ -214,14 +215,20 @@ func BindSecretsApi(app core.App, rg *echo.Group) {
 //	@Accept			*/*
 //	@Produce		json
 //	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/r2/test [get]
-//	@Param			orgId	path	string	true	"Organization Id"
+//	@Router			/org/{orgId}/secret/r2/{secretName}/test [get]
+//	@Param			orgId		path	string	true	"Organization Id"
+//	@Param			secretName	path	string	true	"Secret Name"
 func (api *Api) TestR2Secret(request *models.Request) *models.Response {
-	if !api.app.Settings().R2.Enabled {
-		return models.NewErrorResponse(http.StatusBadRequest, "R2 storage is not enabled.")
+	orgId := request.GetOrgId()
+	secretName := request.GetPathParam("secretName")
+	if secretName == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret name cannot be empty")
 	}
-
-	fs, err := api.app.NewFilesystem()
+	sourceSecrets, err := api.app.Dao().GetSecretByName(orgId, secretName)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	fs, err := api.app.NewFilesystem(sourceSecrets)
 	if err != nil {
 		return models.NewErrorResponse(http.StatusBadRequest, "Failed to initialize the R2 storage. Raw error: \n"+err.Error())
 	}
@@ -252,14 +259,20 @@ func (api *Api) TestR2Secret(request *models.Request) *models.Response {
 //	@Accept			*/*
 //	@Produce		json
 //	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/s3/test [get]
-//	@Param			orgId	path	string	true	"Organization Id"
+//	@Router			/org/{orgId}/secret/s3/{secretName}/test [get]
+//	@Param			orgId		path	string	true	"Organization Id"
+//	@Param			secretName	path	string	true	"Secret Name"
 func (api *Api) TestS3Secret(request *models.Request) *models.Response {
-	if !api.app.Settings().S3.Enabled {
-		return models.NewErrorResponse(http.StatusBadRequest, "S3 storage is not enabled.")
+	orgId := request.GetOrgId()
+	secretName := request.GetPathParam("secretName")
+	if secretName == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret name cannot be empty")
 	}
-
-	fs, err := api.app.NewFilesystem()
+	sourceSecrets, err := api.app.Dao().GetSecretByName(orgId, secretName)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	fs, err := api.app.NewFilesystem(sourceSecrets)
 	if err != nil {
 		return models.NewErrorResponse(http.StatusBadRequest, "Failed to initialize the S3 storage. Raw error: \n"+err.Error())
 	}
@@ -281,54 +294,36 @@ func (api *Api) TestS3Secret(request *models.Request) *models.Response {
 	return models.NewDataResponse(http.StatusOK, nil, "S3 connected successfully")
 }
 
-// DeleteR2Secrets godoc
+// DeleteSecrets godoc
 //
 //	@Security		ApiKeyAuth
-//	@Summary		Delete secrets for source type r2
-//	@Description	Delete secrets for source type r2
+//	@Summary		Delete secrets for secret name
+//	@Description	Delete secrets for secret name
 //	@Tags			Secret
 //	@Accept			*/*
 //	@Produce		json
 //	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/r2/delete [delete]
-//	@Param			orgId	path	string	true	"Organization Id"
-// func (api *Api) DeleteR2Secrets(request *models.Request) *models.Response {
-// 	orgId := request.GetOrgId()
-// 	err := api.app.Dao().DeleteR2Secrets(orgId)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	response := models.NewDataResponse(http.StatusOK, nil, "R2 disconnected")
-// 	return response
-// }
+//	@Router			/org/{orgId}/secret/{secretName}/delete [delete]
+//	@Param			orgId		path	string	true	"Organization Id"
+//	@Param			secretName	path	string	true	"Secret Name"
+func (api *Api) DeleteSecrets(request *models.Request) *models.Response {
+	orgId := request.GetOrgId()
+	secretName := request.GetPathParam("secretName")
+	if secretName == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Secret name cannot be empty")
+	}
+	err := api.app.Dao().DeleteSecrets(orgId, secretName)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	response := models.NewDataResponse(http.StatusOK, nil, "S3 disconnected")
+	return response
+}
 
-// DeleteS3Secrets godoc
-//
-//	@Security		ApiKeyAuth
-//	@Summary		Delete secrets for source type s3
-//	@Description	Delete secrets for source type s3
-//	@Tags			Secret
-//	@Accept			*/*
-//	@Produce		json
-//	@Success		200	{object}	map[string]interface{}
-//	@Router			/org/{orgId}/secret/s3/delete [delete]
-//	@Param			orgId	path	string	true	"Organization Id"
-// func (api *Api) DeleteS3Secrets(request *models.Request) *models.Response {
-// 	orgId := request.GetOrgId()
-// 	err := api.app.Dao().DeleteS3Secrets(orgId)
-// 	if err != nil {
-// 		return models.NewServerErrorResponse(err)
-// 	}
-// 	response := models.NewDataResponse(http.StatusOK, nil, "S3 disconnected")
-// 	return response
-// }
-
-// var GetR2Secret ServiceFunc = (*Api).GetR2Secret
-// var GetS3Secret ServiceFunc = (*Api).GetS3Secret
-// var ConnectR2Secret ServiceFunc = (*Api).ConnectR2Secret
-// var ConnectS3Secret ServiceFunc = (*Api).ConnectS3Secret
+var GetAllSecrets ServiceFunc = (*Api).GetAllSecrets
+var GetSecret ServiceFunc = (*Api).GetSecret
+var ConnectR2Secret ServiceFunc = (*Api).ConnectR2Secret
+var ConnectS3Secret ServiceFunc = (*Api).ConnectS3Secret
 var TestR2Secret ServiceFunc = (*Api).TestR2Secret
 var TestS3Secret ServiceFunc = (*Api).TestS3Secret
-
-// var DeleteR2Secrets ServiceFunc = (*Api).DeleteR2Secrets
-// var DeleteS3Secrets ServiceFunc = (*Api).DeleteS3Secrets
+var DeleteSecrets ServiceFunc = (*Api).DeleteSecrets

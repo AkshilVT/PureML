@@ -1,0 +1,30 @@
+import { MdxLayout } from "components/mdx-layout.tsx";
+
+export const meta = {
+  slug: "change-role",
+  publishedAt: "2023-02-22T09:00:00.000Z",
+  title: "Role based access control",
+  headerImage: "/changelogs/changerole.png",
+  authors: [],
+};
+
+**New**
+
+- Functionality to change the role of the user.
+- Remove the user from an organization.
+- Meilisearch integration with the backend with config options added
+
+**Added**
+
+- Terms & conditions and Privacy policy
+
+**Fixes**
+
+- Multiple notifications on triggered actions updated to a single toast
+- The mail service account updated to the proper account
+
+export default ({ children, ...rest }) => (
+  <MdxLayout meta={meta} {...rest}>
+    {children}
+  </MdxLayout>
+);

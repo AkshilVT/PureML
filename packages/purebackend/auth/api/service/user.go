@@ -32,6 +32,10 @@ func BindUserApi(app core.App, rg *echo.Group) {
 	userGroup.POST("/forgot-password", api.DefaultHandler(UserForgotPassword))
 	userGroup.POST("/verify-reset-password", api.DefaultHandler(UserVerifyResetPassword))
 	userGroup.POST("/reset-password", api.DefaultHandler(UserResetPassword))
+
+	userGroup.POST("/create-session", api.DefaultHandler(CreateSession))
+	userGroup.POST("/session-token", api.DefaultHandler(GetSessionToken))
+	userGroup.POST("/verify-session", api.DefaultHandler(VerifySession), authmiddlewares.RequireAuthContext)
 }
 
 // UserSignUp godoc
@@ -123,7 +127,164 @@ func (api *Api) UserSignUp(request *models.Request) *models.Response {
 		}
 		verifyLink := api.app.Settings().Site.BaseURL + "/verify-email?token=" + signedString
 		emailTemplate := coreservice.BaseEmailTemplate("Verify your email address",
-			`Hi `+user.Handle+`,<br><br>Thanks for signing up for PureML. Please click the link below to verify your email address.<br><br><a href="`+verifyLink+`">Verify Email</a><br><br>Thanks,<br>Team PureML`,
+			`<div style="
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				padding: 0px;
+				gap: 32px;
+				height: 675px;
+			">
+			<div style="
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				padding: 32px;
+				gap: 16px;
+				width: 523px;
+				height: 437px;
+
+				border: 1px solid #e2e8f0;
+				border-radius: 16px;
+				">
+				<img src="./Verify your email_files/lULPiXM.png" alt="PureML_Logo" style="width: 100px; height: 28px">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					padding: 0px;
+					gap: 24px;
+
+					width: 459px;
+					height: 329px;
+				">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					padding: 0px;
+					gap: 24px;
+
+					width: 459px;
+					height: 121px;
+					">
+					<div style="
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						gap: 8px;
+						width: 459px;
+						height: 57px;
+					">
+					<span style="font-size: 24px; color: #1e293b; font-weight: 500">Verify your email</span>
+					<span>Hi `+user.Handle+`, click on the button below to verify your email.</span>
+					</div>
+					<a href="`+verifyLink+`" style="text-decoration: none">
+						<button style="
+							color: white;
+							border-radius: 8px;
+							background-color: #191f4d;
+							padding-right: 16px;
+							padding-left: 16px;
+							padding-top: 8px;
+							padding-bottom: 8px;
+							">
+							Verify Email
+						</button>
+					</a>
+				</div>
+				<div style="width: 459px; border: 0.2px solid #e2e8f0"></div>
+				<div style="
+					font-style: normal;
+					font-weight: 400;
+					font-size: 14px;
+					line-height: 125%;
+					font-feature-settings: &#39;salt&#39; on;
+					">
+					If you did not make this request, then please ignore this mail.<br><br>
+					If you run into any issues you can drop a message on any of our
+					social media platforms or reach out to us on
+					<a href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact.pureml@gmail.com.</a>
+					We look forward to serving you and your business.
+				</div>
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					width: 100%;
+					">
+					Regards<br>Team PureML
+				</div>
+				</div>
+			</div>
+			<div style="
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				padding: 24px 32px;
+				gap: 32px;
+				width: 523px;
+				height: 206px;
+				background: #f8fafc;
+				border-radius: 8px;
+				">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: left;
+					padding: 0px;
+					font-size: 14px;
+					gap: 24px;
+					width: 100%;
+				">
+				<div>
+					You recieved this email because you just requested for new
+					password.<br>If it's not you
+					<a target="_blank" href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact us.</a>
+					<br><br>©️ 2022 PureML. Inc | Texas, USA
+				</div>
+				<div style="justify-content: center; align-items: left; width: 100%">
+					Please visit our
+					<a target="_blank" href="http://www.pureml.com/">website</a> for more
+					support.
+				</div>
+				</div>
+				<div style="width: 474px; border: 1px solid #e2e8f0"></div>
+				<div style="
+					display: flex;
+					flex-direction: row;
+					justify-content: space-between;
+					align-items: center;
+					padding: 0px;
+					gap: 253px;
+					width: 100%;
+					height: 18px;
+				">
+				<img src="./Verify your email_files/lULPiXM.png" alt="PureML_Logo" style="width: 64px">
+				<div style="
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					padding: 0px;
+					gap: 16px;
+
+					width: 80px;
+					height: 16px;
+					">
+					<a href="https://www.linkedin.com/company/pureml-inc/" alt="Linkedin" target="_blank">
+					<img src="./Verify your email_files/l1ROz7q.png" alt="LI" style="width: 16px; height: 16px"></a>
+					<a href="https://twitter.com/getPureML" alt="Twitter" target="_blank">
+					<img src="./Verify your email_files/ph5MnVi.png" alt="TW" style="width: 16px; height: 16px"></a>
+					<a href="https://discord.gg/xNUHt9yguJ" alt="Discord" target="_blank">
+					<img src="./Verify your email_files/bBQ5HJb.png" alt="DC" style="width: 16px; height: 16px"></a>
+				</div>
+				</div>
+			</div>
+			</div>
+			<div id="DCFE8FFC-9B4C-8A56-8C72-80898549AB42"></div>`,
 		)
 		if err != nil {
 			return models.NewServerErrorResponse(err)
@@ -330,7 +491,164 @@ func (api *Api) UserResendVerification(request *models.Request) *models.Response
 	}
 	verifyLink := api.app.Settings().Site.BaseURL + "/verify-email?token=" + signedString
 	emailTemplate := coreservice.BaseEmailTemplate("Verify your email address",
-		`Hi `+user.Handle+`,<br><br>Thanks for signing up for PureML. Please click the link below to verify your email address.<br><br><a href="`+verifyLink+`">Verify Email</a><br><br>Thanks,<br>Team PureML`,
+		`<div style="
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				padding: 0px;
+				gap: 32px;
+				height: 675px;
+			">
+			<div style="
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				padding: 32px;
+				gap: 16px;
+				width: 523px;
+				height: 437px;
+
+				border: 1px solid #e2e8f0;
+				border-radius: 16px;
+				">
+				<img src="./Verify your email_files/lULPiXM.png" alt="PureML_Logo" style="width: 100px; height: 28px">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					padding: 0px;
+					gap: 24px;
+
+					width: 459px;
+					height: 329px;
+				">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					padding: 0px;
+					gap: 24px;
+
+					width: 459px;
+					height: 121px;
+					">
+					<div style="
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						gap: 8px;
+						width: 459px;
+						height: 57px;
+					">
+					<span style="font-size: 24px; color: #1e293b; font-weight: 500">Verify your email</span>
+					<span>Hi `+user.Handle+`, click on the button below to verify your email.</span>
+					</div>
+					<a href="`+verifyLink+`" style="text-decoration: none">
+						<button style="
+							color: white;
+							border-radius: 8px;
+							background-color: #191f4d;
+							padding-right: 16px;
+							padding-left: 16px;
+							padding-top: 8px;
+							padding-bottom: 8px;
+							">
+							Verify Email
+						</button>
+					</a>
+				</div>
+				<div style="width: 459px; border: 0.2px solid #e2e8f0"></div>
+				<div style="
+					font-style: normal;
+					font-weight: 400;
+					font-size: 14px;
+					line-height: 125%;
+					font-feature-settings: &#39;salt&#39; on;
+					">
+					If you did not make this request, then please ignore this mail.<br><br>
+					If you run into any issues you can drop a message on any of our
+					social media platforms or reach out to us on
+					<a href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact.pureml@gmail.com.</a>
+					We look forward to serving you and your business.
+				</div>
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					width: 100%;
+					">
+					Regards<br>Team PureML
+				</div>
+				</div>
+			</div>
+			<div style="
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				padding: 24px 32px;
+				gap: 32px;
+				width: 523px;
+				height: 206px;
+				background: #f8fafc;
+				border-radius: 8px;
+				">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: left;
+					padding: 0px;
+					font-size: 14px;
+					gap: 24px;
+					width: 100%;
+				">
+				<div>
+					You recieved this email because you just requested for new
+					password.<br>If it's not you
+					<a target="_blank" href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact us.</a>
+					<br><br>©️ 2022 PureML. Inc | Texas, USA
+				</div>
+				<div style="justify-content: center; align-items: left; width: 100%">
+					Please visit our
+					<a target="_blank" href="http://www.pureml.com/">website</a> for more
+					support.
+				</div>
+				</div>
+				<div style="width: 474px; border: 1px solid #e2e8f0"></div>
+				<div style="
+					display: flex;
+					flex-direction: row;
+					justify-content: space-between;
+					align-items: center;
+					padding: 0px;
+					gap: 253px;
+					width: 100%;
+					height: 18px;
+				">
+				<img src="./Verify your email_files/lULPiXM.png" alt="PureML_Logo" style="width: 64px">
+				<div style="
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					padding: 0px;
+					gap: 16px;
+
+					width: 80px;
+					height: 16px;
+					">
+					<a href="https://www.linkedin.com/company/pureml-inc/" alt="Linkedin" target="_blank">
+					<img src="./Verify your email_files/l1ROz7q.png" alt="LI" style="width: 16px; height: 16px"></a>
+					<a href="https://twitter.com/getPureML" alt="Twitter" target="_blank">
+					<img src="./Verify your email_files/ph5MnVi.png" alt="TW" style="width: 16px; height: 16px"></a>
+					<a href="https://discord.gg/xNUHt9yguJ" alt="Discord" target="_blank">
+					<img src="./Verify your email_files/bBQ5HJb.png" alt="DC" style="width: 16px; height: 16px"></a>
+				</div>
+				</div>
+			</div>
+			</div>
+			<div id="DCFE8FFC-9B4C-8A56-8C72-80898549AB42"></div>`,
 	)
 	if err != nil {
 		return models.NewServerErrorResponse(err)
@@ -375,7 +693,167 @@ func (api *Api) UserForgotPassword(request *models.Request) *models.Response {
 	}
 	verifyLink := api.app.Settings().Site.BaseURL + "/reset-password?token=" + signedString
 	emailTemplate := coreservice.BaseEmailTemplate("Reset your password",
-		`Hi `+user.Handle+`,<br><br>Someone requested a password reset for your PureML account. If it was you, click the link below to reset your password.<br><br><a href="`+verifyLink+`">Reset Password</a><br><br>Thanks,<br>Team PureML`,
+		`<div style="
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 0px;
+			gap: 32px;
+			height: 675px;
+		">
+		<div style="
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			padding: 32px;
+			gap: 16px;
+			width: 523px;
+			height: 437px;
+
+			border: 1px solid #e2e8f0;
+			border-radius: 16px;
+			">
+			<img src="./Reset your password_files/lULPiXM.png" alt="PureML_Logo" style="width: 100px; height: 28px">
+			<div style="
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 0px;
+				gap: 24px;
+
+				width: 459px;
+				height: 329px;
+			">
+			<div style="
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 0px;
+				gap: 24px;
+
+				width: 459px;
+				height: 121px;
+				">
+				<div style="
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					gap: 8px;
+					width: 459px;
+					height: 57px;
+				">
+				<span style="font-size: 24px; color: #1e293b; font-weight: 500">Reset your password</span>
+				<span>Hi `+user.Handle+`, click on the button below to reset your
+					password.</span>
+				</div>
+				<a href="`+verifyLink+`" style="text-decoration: none">
+					<button style="
+						color: white;
+						border-radius: 8px;
+						background-color: #191f4d;
+						padding-right: 16px;
+						padding-left: 16px;
+						padding-top: 8px;
+						padding-bottom: 8px;
+					">
+					Reset Password
+					</button>
+				</a>
+			</div>
+			<div style="width: 459px; border: 0.2px solid #e2e8f0"></div>
+			<div style="
+				font-style: normal;
+				font-weight: 400;
+				font-size: 14px;
+				line-height: 125%;
+				font-feature-settings: &#39;salt&#39; on;
+				">
+				If you did not make this request, then please ignore this mail.<br><br>
+				If you run into any issues you can drop a message on any of our
+				social media platforms or reach out to us on
+				<a href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact.pureml@gmail.com.</a>
+				We look forward to serving you and your business.
+			</div>
+			<div style="
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				width: 100%;
+				">
+				Regards<br>Team PureML
+			</div>
+			</div>
+		</div>
+		<div style="
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			padding: 24px 32px;
+			gap: 32px;
+			width: 523px;
+			height: 206px;
+			background: #f8fafc;
+			border-radius: 8px;
+			">
+			<div style="
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: left;
+				padding: 0px;
+				font-size: 14px;
+				gap: 24px;
+				width: 100%;
+			">
+			<div>
+				You recieved this email because you just requested for new
+				password.<br>If it’s not you
+				<a target="_blank" href="mailto:contact.pureml@gmail.com" style="color: #0e4ddd">contact us.</a>
+				<br><br>©️ 2022 PureML. Inc | Texas, USA
+			</div>
+			<div style="justify-content: center; align-items: left; width: 100%">
+				Please visit our
+				<a target="_blank" href="http://www.pureml.com/">website</a> for more
+				support.
+			</div>
+			</div>
+			<div style="width: 472px; border: 1px solid #e2e8f0"></div>
+			<div style="
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: center;
+				padding: 0px;
+				gap: 253px;
+				width: 100%;
+				height: 18px;
+			">
+			<img src="./Reset your password_files/lULPiXM.png" alt="PureML_Logo" style="width: 64px">
+			<div style="
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				padding: 0px;
+				gap: 16px;
+
+				width: 80px;
+				height: 16px;
+				">
+				<a href="https://www.linkedin.com/company/pureml-inc/" alt="Linkedin" target="_blank">
+				<img src="./Reset your password_files/l1ROz7q.png" alt="Linkedin" style="width: 16px; height: 16px"></a>
+				<a href="https://twitter.com/getPureML" alt="Twitter" target="_blank">
+				<img src="./Reset your password_files/ph5MnVi.png" alt="Twitter" style="width: 16px; height: 16px"></a>
+				<a href="https://discord.gg/xNUHt9yguJ" alt="Discord" target="_blank">
+				<img src="./Reset your password_files/bBQ5HJb.png" alt="Discord" style="width: 16px; height: 16px"></a>
+			</div>
+			</div>
+		</div>
+		</div>
+	
+
+	<div id="763B5B14-27EC-CABC-9C2E-973F68AB4B1D"></div>`,
 	)
 	if err != nil {
 		return models.NewServerErrorResponse(err)
@@ -610,6 +1088,181 @@ func (api *Api) DeleteProfile(request *models.Request) *models.Response {
 	return nil
 }
 
+// CreateSession godoc
+//
+//	@Summary		Create Session for CLI.
+//	@Description	Create empty session flow.
+//	@Tags			User
+//	@Accept			*/*
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}
+//	@Router			/user/create-session [post]
+//	@Param			org	body	models.CreateSessionRequest	true	"Session details"
+func (api *Api) CreateSession(request *models.Request) *models.Response {
+	request.ParseJsonBody()
+	device := request.GetParsedBodyAttribute("device")
+	var deviceData string
+	if device == nil {
+		deviceData = ""
+	} else {
+		deviceData = device.(string)
+	}
+	deviceId := request.GetParsedBodyAttribute("device_id")
+	var deviceIdData string
+	if deviceId == nil {
+		deviceIdData = ""
+	} else {
+		deviceIdData = deviceId.(string)
+	}
+	if deviceIdData == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Device Id is required")
+	}
+	deviceLoc := request.GetParsedBodyAttribute("device_location")
+	var deviceLocData string
+	if deviceLoc == nil {
+		deviceLocData = ""
+	} else {
+		deviceLocData = deviceLoc.(string)
+	}
+	session, err := api.app.Dao().CreateSession(deviceData, deviceIdData, deviceLocData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	return models.NewDataResponse(http.StatusOK, session, "Session created")
+}
+
+// GetSessionToken godoc
+//
+//	@Summary		Get Session Token if approved for CLI.
+//	@Description	Get Session Token if approved for CLI.
+//	@Tags			User
+//	@Accept			*/*
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}
+//	@Router			/user/session-token [post]
+//	@Param			org	body	models.SessionTokenRequest	true	"Session details"
+func (api *Api) GetSessionToken(request *models.Request) *models.Response {
+	request.ParseJsonBody()
+	sessionId := request.GetParsedBodyAttribute("session_id")
+	var sessionIdData uuid.UUID
+	if sessionId == nil {
+		sessionIdData = uuid.Nil
+	} else {
+		sessionIdData = uuid.FromStringOrNil(sessionId.(string))
+	}
+	if sessionIdData == uuid.Nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Session Id is required")
+	}
+	deviceId := request.GetParsedBodyAttribute("device_id")
+	var deviceIdData string
+	if deviceId == nil {
+		deviceIdData = ""
+	} else {
+		deviceIdData = deviceId.(string)
+	}
+	if deviceIdData == "" {
+		return models.NewErrorResponse(http.StatusBadRequest, "Device Id is required")
+	}
+	session, err := api.app.Dao().GetSession(sessionIdData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	if session == nil {
+		return models.NewErrorResponse(http.StatusNotFound, "Session not found")
+	}
+	if !session.Approved {
+		return models.NewErrorResponse(http.StatusUnauthorized, "Session not approved")
+	}
+	if session.Invalid {
+		return models.NewErrorResponse(http.StatusForbidden, "Session invalid")
+	}
+	if session.DeviceId != deviceIdData {
+		return models.NewErrorResponse(http.StatusForbidden, "Session invalid device")
+	}
+	userDb, err := api.app.Dao().GetUserByUUID(session.UserUUID)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"uuid":   userDb.UUID,
+		"email":  userDb.Email,
+		"handle": userDb.Handle,
+	})
+	signedString, err := token.SignedString([]byte(api.app.Settings().AdminAuthToken.Secret))
+	if err != nil {
+		panic(err)
+	}
+	// Set session as invalid hence cannot be reused to get token.
+	_, err = api.app.Dao().UpdateSession(sessionIdData, userDb.UUID, map[string]interface{}{
+		"invalid": true,
+	})
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	data := []map[string]string{
+		{
+			"email":       userDb.Email,
+			"accessToken": signedString,
+		},
+	}
+	return models.NewDataResponse(http.StatusOK, data, "Session Token created")
+}
+
+// VerifySession godoc
+//
+//	@Security		ApiKeyAuth
+//	@Summary		Verify Session and approve if valid for CLI.
+//	@Description	Verify Session and approve if valid for CLI.
+//	@Tags			User
+//	@Accept			*/*
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}
+//	@Router			/user/verify-session [post]
+//	@Param			org	body	models.VerifySessionRequest	true	"Session details"
+func (api *Api) VerifySession(request *models.Request) *models.Response {
+	request.ParseJsonBody()
+	sessionId := request.GetParsedBodyAttribute("session_id")
+	var sessionIdData uuid.UUID
+	if sessionId == nil {
+		sessionIdData = uuid.Nil
+	} else {
+		sessionIdData = uuid.FromStringOrNil(sessionId.(string))
+	}
+	if sessionIdData == uuid.Nil {
+		return models.NewErrorResponse(http.StatusBadRequest, "Session Id is required")
+	}
+	session, err := api.app.Dao().GetSession(sessionIdData)
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	if session == nil {
+		return models.NewErrorResponse(http.StatusNotFound, "Session not found")
+	}
+	if session.Approved {
+		return models.NewErrorResponse(http.StatusBadRequest, "Session already approved")
+	}
+	if session.Invalid {
+		return models.NewErrorResponse(http.StatusForbidden, "Session invalid")
+	}
+	userUUID := request.GetUserUUID()
+	if session.CreatedAt.Unix() < time.Now().Add(-time.Minute*10).Unix() {
+		_, err = api.app.Dao().UpdateSession(sessionIdData, userUUID, map[string]interface{}{
+			"invalid": true,
+		})
+		if err != nil {
+			return models.NewServerErrorResponse(err)
+		}
+		return models.NewErrorResponse(http.StatusForbidden, "Session expired")
+	}
+	_, err = api.app.Dao().UpdateSession(sessionIdData, userUUID, map[string]interface{}{
+		"approved": true,
+	})
+	if err != nil {
+		return models.NewServerErrorResponse(err)
+	}
+	return models.NewDataResponse(http.StatusOK, nil, "Session approved")
+}
+
 var UserSignUp ServiceFunc = (*Api).UserSignUp
 var UserLogin ServiceFunc = (*Api).UserLogin
 var UserVerifyEmail ServiceFunc = (*Api).UserVerifyEmail
@@ -621,3 +1274,7 @@ var GetProfile ServiceFunc = (*Api).GetProfile
 var GetProfileByHandle ServiceFunc = (*Api).GetProfileByHandle
 var UpdateProfile ServiceFunc = (*Api).UpdateProfile
 var DeleteProfile ServiceFunc = (*Api).DeleteProfile
+
+var CreateSession ServiceFunc = (*Api).CreateSession
+var GetSessionToken ServiceFunc = (*Api).GetSessionToken
+var VerifySession ServiceFunc = (*Api).VerifySession

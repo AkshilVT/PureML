@@ -4,7 +4,7 @@ export default function JoinCommunitySection() {
   return (
     <div className="h-fit flex flex-col justify-center items-center gap-y-8 lg:gap-y-16">
       <div className="flex flex-col gap-y-4 justify-center">
-        <div className="text-center text-brand-200 font-spacegrotesk">
+        <div className="text-center text-brand-200 font-satoshi">
           <span className="text-3xl md:text-4xl lg:text-5xl">Join our </span>
           <span className="text-slate-500 text-3xl md:text-4xl lg:text-5xl text-slate-500">
             open source
@@ -12,7 +12,7 @@ export default function JoinCommunitySection() {
           <span className="text-3xl md:text-4xl lg:text-5xl"> community</span>
         </div>
         <div className="flex justify-center text-slate-600">
-          <div className="xl:w-3/5 text-center text-base md:text-xl lg:text-2xl font-spacegrotesk">
+          <div className="xl:w-3/5 text-center text-base md:text-xl lg:text-2xl font-satoshi">
             We're building the largest production ML community on the Internet.
             Check out our{" "}
             <a

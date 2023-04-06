@@ -49,6 +49,15 @@ definitions:
       handle:
         type: string
     type: object
+  models.CreateSessionRequest:
+    properties:
+      device:
+        type: string
+      device_id:
+        type: string
+      device_location:
+        type: string
+    type: object
   models.DatasetReviewRequest:
     properties:
       description:
@@ -117,11 +126,46 @@ definitions:
       title:
         type: string
     type: object
+  models.R2SecretRequest:
+    properties:
+      access_key_id:
+        type: string
+      access_key_secret:
+        type: string
+      account_id:
+        type: string
+      bucket_name:
+        type: string
+      public_url:
+        type: string
+      secret_name:
+        type: string
+    type: object
   models.ReadmeRequest:
     properties:
       content:
         type: string
       file_type:
+        type: string
+    type: object
+  models.S3SecretRequest:
+    properties:
+      access_key_id:
+        type: string
+      access_key_secret:
+        type: string
+      bucket_location:
+        type: string
+      bucket_name:
+        type: string
+      secret_name:
+        type: string
+    type: object
+  models.SessionTokenRequest:
+    properties:
+      device_id:
+        type: string
+      session_id:
         type: string
     type: object
   models.UpdateOrgRequest:
@@ -196,6 +240,11 @@ definitions:
   models.UserVerifyTokenRequest:
     properties:
       token:
+        type: string
+    type: object
+  models.VerifySessionRequest:
+    properties:
+      session_id:
         type: string
     type: object
 info:
@@ -2310,7 +2359,89 @@ paths:
       summary: Update a user's role in an organization.
       tags:
       - Organization
-  /org/{orgId}/secret/r2/test:
+  /org/{orgId}/secret:
+    get:
+      consumes:
+      - '*/*'
+      description: Get all secretnames of organization
+      parameters:
+      - description: Organization Id
+        in: path
+        name: orgId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get all secretnames of organization
+      tags:
+      - Secret
+  /org/{orgId}/secret/{secretName}:
+    get:
+      consumes:
+      - '*/*'
+      description: Get secrets for secret name
+      parameters:
+      - description: Organization Id
+        in: path
+        name: orgId
+        required: true
+        type: string
+      - description: Secret Name
+        in: path
+        name: secretName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get secrets for secret name
+      tags:
+      - Secret
+  /org/{orgId}/secret/{secretName}/delete:
+    delete:
+      consumes:
+      - '*/*'
+      description: Delete secrets for secret name
+      parameters:
+      - description: Organization Id
+        in: path
+        name: orgId
+        required: true
+        type: string
+      - description: Secret Name
+        in: path
+        name: secretName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete secrets for secret name
+      tags:
+      - Secret
+  /org/{orgId}/secret/r2/{secretName}/test:
     get:
       consumes:
       - '*/*'
@@ -2319,6 +2450,11 @@ paths:
       - description: Organization Id
         in: path
         name: orgId
+        required: true
+        type: string
+      - description: Secret Name
+        in: path
+        name: secretName
         required: true
         type: string
       produces:
@@ -2334,7 +2470,37 @@ paths:
       summary: Test secrets for source type r2
       tags:
       - Secret
-  /org/{orgId}/secret/s3/test:
+  /org/{orgId}/secret/r2/connect:
+    post:
+      consumes:
+      - '*/*'
+      description: Add secrets for source type r2
+      parameters:
+      - description: Organization Id
+        in: path
+        name: orgId
+        required: true
+        type: string
+      - description: Secret
+        in: body
+        name: secret
+        required: true
+        schema:
+          $ref: '#/definitions/models.R2SecretRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Add secrets for source type r2
+      tags:
+      - Secret
+  /org/{orgId}/secret/s3/{secretName}/test:
     get:
       consumes:
       - '*/*'
@@ -2343,6 +2509,11 @@ paths:
       - description: Organization Id
         in: path
         name: orgId
+        required: true
+        type: string
+      - description: Secret Name
+        in: path
+        name: secretName
         required: true
         type: string
       produces:
@@ -2356,6 +2527,36 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Test secrets for source type s3
+      tags:
+      - Secret
+  /org/{orgId}/secret/s3/connect:
+    post:
+      consumes:
+      - '*/*'
+      description: Add secrets for source type s3
+      parameters:
+      - description: Organization Id
+        in: path
+        name: orgId
+        required: true
+        type: string
+      - description: Secret
+        in: body
+        name: secret
+        required: true
+        schema:
+          $ref: '#/definitions/models.S3SecretRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Add secrets for source type s3
       tags:
       - Secret
   /org/{orgId}/update:
@@ -2534,6 +2735,29 @@ paths:
       summary: Get all public models
       tags:
       - Model
+  /user/create-session:
+    post:
+      consumes:
+      - '*/*'
+      description: Create empty session flow.
+      parameters:
+      - description: Session details
+        in: body
+        name: org
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create Session for CLI.
+      tags:
+      - User
   /user/delete:
     delete:
       consumes:
@@ -2709,6 +2933,29 @@ paths:
       summary: User reset password.
       tags:
       - User
+  /user/session-token:
+    post:
+      consumes:
+      - '*/*'
+      description: Get Session Token if approved for CLI.
+      parameters:
+      - description: Session details
+        in: body
+        name: org
+        required: true
+        schema:
+          $ref: '#/definitions/models.SessionTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get Session Token if approved for CLI.
+      tags:
+      - User
   /user/signup:
     post:
       consumes:
@@ -2779,6 +3026,31 @@ paths:
             additionalProperties: true
             type: object
       summary: User reset password verify token.
+      tags:
+      - User
+  /user/verify-session:
+    post:
+      consumes:
+      - '*/*'
+      description: Verify Session and approve if valid for CLI.
+      parameters:
+      - description: Session details
+        in: body
+        name: org
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifySessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Verify Session and approve if valid for CLI.
       tags:
       - User
 securityDefinitions:
