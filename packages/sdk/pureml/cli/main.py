@@ -17,10 +17,12 @@ load_dotenv()
 
 import pureml.cli.auth as auth
 import pureml.cli.secrets as secrets
+import pureml.cli.orgs as orgs
 
 app = typer.Typer()
 app.add_typer(auth.app, name="auth")
 app.add_typer(secrets.app, name="secrets")
+app.add_typer(orgs.app, name="orgs")
 
 
 @app.callback(no_args_is_help=True)
