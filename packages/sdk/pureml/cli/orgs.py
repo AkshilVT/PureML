@@ -38,7 +38,7 @@ def show():
     response = requests.get(url, headers=headers)
     if response.ok:
         print()
-        print("[bold green]Select the Organization from the list below!")
+        print("[bold green] You are part of following Organizations!")
         org_all = response.json()["data"]
         console = Console()
         count = 0
@@ -56,6 +56,7 @@ def show():
 
 @app.command()
 def select():
+    print("[bold green] Select the Sr.No. of Organization")
     count = show()
     if count:
         sr_no = -1
