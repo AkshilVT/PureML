@@ -100,9 +100,17 @@ def signup(backend_url: str = typer.Option("", "--backend-url", "-b", help="Back
     if not response.ok:
         print(f"[red]Could not create account! Please try again later")
         return
-    print(
-        f"[green]Successfully created your account! You can now login using ```pure auth login```"
-    )
+    elif response.status_code == 202:
+        print(f"[green]Successfully created your account! You need to verify your email to login!")
+        print(
+            f"[green]You can now login using ```pureml auth login```"
+        )
+    else:
+        print(f"[green]Successfully created your account! No Email Verificaiton required!")
+        print(
+            f"[green]You can now login using ```pureml auth login```"
+        )
+
 
 
 def list_org(access_token: str, base_url: str):
