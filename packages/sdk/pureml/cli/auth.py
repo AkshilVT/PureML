@@ -80,7 +80,7 @@ def callback():
 
 @app.command()
 def signup(backend_url: str = typer.Option("", "--backend-url", "-b", help="Backend URL for self-hosted or custom pureml backend instance")):
-    print("\nCreate a new account/\n")
+    print("\nCreate a new account\n")
     email: str = typer.prompt("Enter new email")
     handle: str = typer.prompt("Enter new user handle")
     name: str = typer.prompt("Enter new user name")
@@ -103,12 +103,12 @@ def signup(backend_url: str = typer.Option("", "--backend-url", "-b", help="Back
     elif response.status_code == 202:
         print(f"[green]Successfully created your account! You need to verify your email to login!")
         print(
-            f"[green]You can now login using ```pureml auth login```"
+            f"[green]You can then login using `pureml auth login`"
         )
     else:
-        print(f"[green]Successfully created your account! No Email Verificaiton required!")
+        print(f"[green]Successfully created your account!")
         print(
-            f"[green]You can now login using ```pureml auth login```"
+            f"[green]You can now login using `pureml auth login`"
         )
 
 
