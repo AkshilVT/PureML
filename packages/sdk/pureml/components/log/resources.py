@@ -147,19 +147,19 @@ def fetch(label: str):
         file_name, url = file_details
 
         save_path = os.path.join(path_schema.PATH_PREDICT_DIR, file_name)
-        print("save path", save_path)
+        # print("save path", save_path)
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": "Bearer {}".format(user_token),
         }
 
-        # print("figure url", url)
+        # print("resorce url", url)
 
         # response = requests.get(url, headers=headers)
         response = requests.get(url)
 
-        print(response.status_code)
+        # print(response.status_code)
 
         if response.ok:
             print("[bold green] resource {} has been fetched".format(file_name))
@@ -186,6 +186,7 @@ def fetch(label: str):
             return response.text
 
     resource_details = details(label=label)
+    # print("resource_details", resource_details)
 
     if resource_details is None:
         return

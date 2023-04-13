@@ -165,6 +165,10 @@ func (api *Api) LogFileModel(request *models.Request) *models.Response {
 	if !sourceValid {
 		return models.NewErrorResponse(http.StatusBadRequest, "Unsupported model storage")
 	}
+	// TODO: not sure what should be the best way and best place to do this
+	if modelSourceType == "PUREML-STORAGE" {
+		sourceSecrets.SourceType = "R2"
+	}
 	logs := make(map[string]string)
 	for _, fileHeader := range fileHeaders {
 		name := fileHeader.Filename

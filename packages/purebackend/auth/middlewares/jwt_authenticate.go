@@ -1,6 +1,9 @@
 package middlewares
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,8 +17,10 @@ import (
 )
 
 const (
-	AuthHeaderName = "Authorization"
-	ContextAuthKey = "User"
+	AuthHeaderName   = "Authorization"
+	APIIdHeaderName  = "X-API-ID"
+	APIKeyHeaderName = "X-API-KEY"
+	ContextAuthKey   = "User"
 )
 
 func AuthenticateJWT(app core.App) echo.MiddlewareFunc {
@@ -60,6 +65,56 @@ func AuthenticateJWT(app core.App) echo.MiddlewareFunc {
 						Handle: "",
 					})
 				}
+			}
+			return next(context)
+		}
+	}
+}
+
+func AuthenticateAPI(app core.App) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(context echo.Context) error {
+			apiIdHeaderValue := middlewares.ExtractRequestHeader(APIIdHeaderName, context)
+			if apiIdHeaderValue == "" {
+				return next(context)
+			}
+			apiKeyHeaderValue := middlewares.ExtractRequestHeader(APIKeyHeaderName, context)
+			if apiKeyHeaderValue == "" {
+				return next(context)
+			}
+			tokenUUID, err := uuid.FromString(apiIdHeaderValue)
+			if err != nil {
+				context.Response().WriteHeader(http.StatusForbidden)
+				_, err := context.Response().Writer.Write([]byte("API Id is invalid"))
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+			tokenSecretHMAC := hmac.New(sha256.New, []byte(app.Settings().APITokenSecretKey))
+			tokenSecretHMAC.Write([]byte(tokenUUID.String()))
+			tokenSecret := hex.EncodeToString(tokenSecretHMAC.Sum(nil))
+			if tokenSecret != apiKeyHeaderValue {
+				context.Response().WriteHeader(http.StatusForbidden)
+				_, err := context.Response().Writer.Write([]byte("API key is invalid"))
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+			user, err := app.Dao().GetUserByAPIKeyId(tokenUUID)
+			if err != nil || user != nil {
+				context.Set(ContextAuthKey, &models.UserClaims{
+					UUID:   user.UUID,
+					Email:  user.Email,
+					Handle: user.Handle,
+				})
+			} else {
+				context.Set(ContextAuthKey, &models.UserClaims{
+					UUID:   uuid.Nil,
+					Email:  "",
+					Handle: "",
+				})
 			}
 			return next(context)
 		}

@@ -8,7 +8,6 @@ export default function TrustedByCompaniesSection() {
       <div className="lg:h-fit w-full md:max-w-screen-xl px-0 md:px-8">
         <div className="px-4 md:px-0">
           <section className="">
-            {/* pt-8 md:pt-0 md:pb-0 2xl:pt-16 2xl:pb-24 */}
             <Carousel
               containerProps={{
                 style: {
@@ -35,7 +34,7 @@ export default function TrustedByCompaniesSection() {
             >
               <div className="w-48 md:w-56 flex justify-center items-center">
                 <img
-                  src="/imgs/landingPage/trustedCompanyLogo/OneImmersiveComp.svg"
+                  src="/imgs/landingPage/trustedCompanyLogo/OneImmerseComp.svg"
                   alt="OneImmersive"
                 />
               </div>

@@ -2758,6 +2758,24 @@ paths:
       summary: Create Session for CLI.
       tags:
       - User
+  /user/create-token:
+    post:
+      consumes:
+      - '*/*'
+      description: Create a new API token for user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create API Token.
+      tags:
+      - User
   /user/delete:
     delete:
       consumes:
@@ -2774,6 +2792,30 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete user profile.
+      tags:
+      - User
+  /user/delete-token/{tokenUUID}:
+    delete:
+      consumes:
+      - '*/*'
+      description: Delete given API token of user
+      parameters:
+      - description: Token UUID
+        in: path
+        name: tokenUUID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete API Token.
       tags:
       - User
   /user/forgot-password:

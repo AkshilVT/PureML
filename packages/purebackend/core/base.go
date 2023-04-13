@@ -82,6 +82,9 @@ func NewBaseApp(appConfig *BaseAppConfig) *BaseApp {
 		if appConfig.Settings.AdminAuthToken.Secret != "" {
 			app.settings.AdminAuthToken = appConfig.Settings.AdminAuthToken
 		}
+		if appConfig.Settings.APITokenSecretKey != "" {
+			app.settings.APITokenSecretKey = appConfig.Settings.APITokenSecretKey
+		}
 		if appConfig.Settings.MailVerifificationAuthToken.Secret != "" {
 			app.settings.MailVerifificationAuthToken = appConfig.Settings.MailVerifificationAuthToken
 		}

@@ -1,8 +1,41 @@
 import { useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
+import clsx from "clsx";
+import { useRouter } from "next/router";
+
+function primaryLinkCss(currentPage: boolean) {
+  return clsx(
+    currentPage ? "text-slate-950 font-medium" : "text-slate-600",
+    "w-full text-base letterSpaced hover:underline hover:underline-offset-2"
+  );
+}
 
 export default function Navbar() {
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+  const pathname = router.pathname;
+  const navItems = [
+    {
+      id: "whypureml",
+      name: "WHY PUREML",
+      hyperlink: `https://pureml.com/whypureml`,
+    },
+    {
+      id: "mltools",
+      name: "ML TOOLS",
+      hyperlink: `https://pureml.com/mltools`,
+    },
+    {
+      id: "changelog",
+      name: "CHANGELOG",
+      hyperlink: "/",
+    },
+    {
+      id: "docs",
+      name: "DOCS",
+      hyperlink: "https://pureml.mintlify.app",
+    },
+  ];
   if (!open)
     return (
       <div className="flex justify-center">
@@ -88,54 +121,28 @@ export default function Navbar() {
                 />
               </div>
             </div>
-            <div className="hidden sm:flex flex font-medium">
-              <div className="px-4 flex justify-center items-center">
-                <a
-                  href="https://pureml.com/whypureml"
-                  className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
-                >
-                  WHY PUREML
-                </a>
-              </div>
-              <div className="px-4 flex justify-center items-center">
-                <a
-                  href="https://pureml.com/mltools"
-                  className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
-                >
-                  MLOPS TOOLS
-                </a>
-              </div>
-              <div className="px-4 flex justify-center items-center">
-                <a
-                  href="https://changelog.pureml.com"
-                  className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  CHANGELOG
-                </a>
-              </div>
-              <div className="px-4 flex justify-center items-center">
-                <a
-                  href="https://pureml.mintlify.app"
-                  className="w-full text-lg letterSpaced text-brand-200 hover:underline hover:underline-offset-2"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  DOCS
-                </a>
-              </div>
-              <div className="px-4 flex justify-center items-center">
+            <div className="hidden sm:flex gap-x-4">
+              {Object.keys(navItems).map((key: string) => (
+                <div className="flex justify-center items-center" key={key}>
+                  <a
+                    href={navItems[key as any].hyperlink}
+                    className={`${primaryLinkCss(pathname === navItems[key as any].hyperlink)}`}
+                  >
+                    {navItems[key as any].name}
+                  </a>
+                </div>
+              ))}
+              <div className="flex justify-center items-center">
                 <a
                   href="https://pureml.com/auth/signin"
-                  className="flex justify-center items-center gap-y-4 text-brand-200 hover:underline hover:underline-offset-2 text-lg letterSpaced"
+                  className="flex justify-center items-center gap-y-4 text-brand-200 hover:underline hover:underline-offset-2 text-base letterSpaced"
                 >
                   SIGN IN <ArrowUpRight className="text-brand-200 w-5" />
                 </a>
               </div>
-              <div className="px-4 flex justify-center items-center pt-1">
+              <div className="flex justify-center items-center pt-1">
                 <a
-                  className="github-button flex justify-center items-center gap-y-4 text-brand-200 hover:underline hover:underline-offset-2 text-lg letterSpaced"
+                  className="github-button flex justify-center items-center gap-y-4 text-brand-200 hover:underline hover:underline-offset-2 text-base letterSpaced"
                   href="https://github.com/pureml-inc/pureml"
                   data-color-scheme="no-preference: dark_dimmed; light: light_high_contrast; dark: light;"
                   data-size="large"

@@ -174,6 +174,22 @@ func (dao *Dao) UpdateSession(sessionUUID uuid.UUID, userUUID uuid.UUID, updated
 	return dao.Datastore().UpdateSession(sessionUUID, userUUID, updatedAttributes)
 }
 
+func (dao *Dao) CreateToken(userUUID uuid.UUID, tokenUUID uuid.UUID, tokenSecret string) (*authmodels.CreateTokenResponse, error) {
+	return dao.Datastore().CreateToken(userUUID, tokenUUID, tokenSecret)
+}
+
+func (dao *Dao) ValidateUserToken(userUUID uuid.UUID, tokenUUID uuid.UUID) (bool, error) {
+	return dao.Datastore().ValidateUserToken(userUUID, tokenUUID)
+}
+
+func (dao *Dao) GetUserByAPIKeyId(tokenUUID uuid.UUID) (*userorgmodels.UserResponse, error) {
+	return dao.Datastore().GetUserByAPIKeyId(tokenUUID)
+}
+
+func (dao *Dao) DeleteToken(tokenUUID uuid.UUID) error {
+	return dao.Datastore().DeleteToken(tokenUUID)
+}
+
 func (dao *Dao) GetLogForModelVersion(modelVersionUUID uuid.UUID) ([]models.LogResponse, error) {
 	return dao.Datastore().GetLogForModelVersion(modelVersionUUID)
 }

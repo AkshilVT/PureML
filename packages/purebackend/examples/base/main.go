@@ -72,6 +72,11 @@ func main() {
 		}
 		appSettings.AdminAuthToken = adminAuthTokenSettings
 	}
+
+	apiTokenSecretKey := os.Getenv("PURE_API_TOKEN_SECRET_KEY")
+	if apiTokenSecretKey != "" {
+		appSettings.APITokenSecretKey = apiTokenSecretKey
+	}
 	
 	passwordResetAuthTokenSecret := os.Getenv("PURE_PASSWORD_RESET_TOKEN_SECRET")
 	if passwordResetAuthTokenSecret != "" {

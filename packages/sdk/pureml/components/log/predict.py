@@ -158,7 +158,7 @@ def fetch(label: str):
             "Authorization": "Bearer {}".format(user_token),
         }
 
-        # print("figure url", url)
+        # print("predict url", url)
 
         response = requests.get(url)
 

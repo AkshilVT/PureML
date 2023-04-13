@@ -55,6 +55,7 @@ func NewTestApp(optTestDataDir ...string) (*TestApp, error) {
 		return nil, err
 	}
 	app.Settings().AdminAuthToken.Secret = "pureml-test-secret"
+	app.Settings().APITokenSecretKey = "pureml-test-secret"
 
 	t := &TestApp{
 		BaseApp: app,

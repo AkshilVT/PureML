@@ -165,6 +165,10 @@ func (api *Api) LogFileDataset(request *models.Request) *models.Response {
 	if !sourceValid {
 		return models.NewErrorResponse(http.StatusBadRequest, "Unsupported dataset storage")
 	}
+	// TODO: not sure what should be the best way and best place to do this
+	if datasetSourceType == "PUREML-STORAGE" {
+		sourceSecrets.SourceType = "R2"
+	}
 	logs := make(map[string]string)
 	for _, fileHeader := range fileHeaders {
 		name := fileHeader.Filename

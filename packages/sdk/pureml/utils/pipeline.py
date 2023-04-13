@@ -6,6 +6,7 @@ import shutil
 from .log_utils import update_step_dict
 import time
 from pureml.schema import ConfigKeys
+from datetime import datetime
 
 config_keys = ConfigKeys
 
@@ -22,10 +23,13 @@ def add_load_data_to_config(name, description=None, func=None, hash=""):
             print("Unable to get load_data source code")
             print(e)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.load_data.value] = {
         "name": name,
         "desc": str(description),
-        "time": str(time.time()),
+        "time": current_datetime,
         "hash": hash,
         "type": config_keys.load_data.value,
         "code": code,
@@ -59,10 +63,13 @@ def add_transformer_to_config(name, description=None, func=None, hash="", parent
             print("Unable to get transformer source code")
             print(e)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.transformer.value][position] = {
         "name": name,
         "desc": str(description),
-        "time": str(time.time()),
+        "time": current_datetime,
         "hash": hash,
         "type": config_keys.transformer.value,
         "parent": parent,
@@ -94,10 +101,13 @@ def add_dataset_to_config(
             print("Unable to get dataset source code")
             print(e)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.dataset.value] = {
         "name": name,
         "desc": str(description),
-        "time": str(time.time()),
+        "time": current_datetime,
         "branch": branch,
         "hash": hash,
         "type": config_keys.dataset.value,
@@ -125,6 +135,9 @@ def add_model_to_config(name, branch, description=None, func=None, hash="", vers
             print("Unable to get model source code")
             print(e)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     # Empty hash is passed to create the empty model with just model name the first time
     # Complete hash is passed to create the model with all the details in the second time
     if hash == "":
@@ -133,7 +146,7 @@ def add_model_to_config(name, branch, description=None, func=None, hash="", vers
         config[config_keys.model.value][position] = {
             "name": name,
             "desc": str(description),
-            "time": str(time.time()),
+            "time": current_datetime,
             "branch": branch,
             "hash": hash,
             "version": version,
@@ -173,6 +186,9 @@ def add_metrics_to_config(
 
     hash = generate_hash_for_dict(values=metric_values)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.metrics.value].update(
         {
             "values": metric_values,
@@ -180,6 +196,7 @@ def add_metrics_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -219,6 +236,9 @@ def add_params_to_config(
     hash = generate_hash_for_dict(values=param_values)
     # print("params", model_version)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.params.value].update(
         {
             "values": param_values,
@@ -226,6 +246,7 @@ def add_params_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -264,6 +285,9 @@ def add_figures_to_config(
     hash = generate_hash_for_dict(values=figure_values)
     # print("figures", model_version)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.figure.value].update(
         {
             "values": figure_values,
@@ -271,6 +295,7 @@ def add_figures_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -310,6 +335,9 @@ def add_pred_to_config(
     hash = generate_hash_for_dict(values=pred_function_values)
     # print("pred_function", model_version)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.pred_function.value].update(
         {
             "values": pred_function_values,
@@ -317,6 +345,7 @@ def add_pred_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -356,6 +385,9 @@ def add_pip_req_to_config(
     hash = generate_hash_for_dict(values=pip_requirement_values)
     # print("pred_function", model_version)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.pip_requirement.value].update(
         {
             "values": pip_requirement_values,
@@ -363,6 +395,7 @@ def add_pip_req_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -402,6 +435,9 @@ def add_resource_to_config(
     hash = generate_hash_for_dict(values=pip_requirement_values)
     # print("pred_function", model_version)
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     config[config_keys.resource.value].update(
         {
             "values": pip_requirement_values,
@@ -409,6 +445,7 @@ def add_resource_to_config(
             "model_name": model_name,
             "model_branch": model_branch,
             "model_version": model_version,
+            "time": current_datetime,
         }
     )
 
@@ -437,6 +474,9 @@ def add_artifacts_to_config(name, values, func):
         config=config
     )
 
+    current_datetime = datetime.now()
+    current_datetime = str(current_datetime.strftime("%d %b %Y, %H:%M"))
+
     position = len(config[config_keys.artifacts.value]) + 1
     config[config_keys.artifacts.value][position] = {
         "name": name,
@@ -444,6 +484,7 @@ def add_artifacts_to_config(name, values, func):
         "version": version,
         "model_name": model_name,
         "model_version": model_version,
+        "time": current_datetime,
     }
 
 

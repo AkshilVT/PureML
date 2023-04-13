@@ -49,3 +49,9 @@ type VerifySessionResponse struct {
 	Invalid     bool                             `json:"invalid"`
 	CreatedAt   time.Time                        `json:"created_at"`
 }
+
+type CreateTokenResponse struct {
+	UUID           uuid.UUID `json:"uuid"`
+	APITokenSecret string    `json:"api_token_secret"`
+	CreatedAt      time.Time `json:"created_at"`
+}

@@ -18,23 +18,38 @@ import os
 #     )
 
 
+def remove_dirs(dirs):
+    dirs_to_ignore = PredictSchema().dirs_to_ignore
+
+    for d in dirs_to_ignore:
+        if d in dirs:
+            # print('Removing ', d)
+            dirs.remove(d)
+    # print(dirs)
+
+    return dirs
+
+
 def zip_content(src_path, dst_path):
 
-    # folder_path = '.'
-    # zip_path = '/path/to/zipfile.zip'
-    folders_to_ignore = PredictSchema().folders_to_ignore  # ["./.pureml", "./.venv"]
+    # [".pureml", ".venv", "__pycache__"]
+    dirs_to_ignore = PredictSchema().dirs_to_ignore
 
     # Create a zip archive of the folder, excluding the specified folder
     with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
+
         for root, dirs, files in os.walk(src_path):
+            # print("dirs", dirs)
+            dirs = remove_dirs(dirs)
+
             for file in files:
                 file_path = os.path.join(root, file)
-                # print("ignored", file_path)
-                if not any(
-                    file_path.startswith(folder) for folder in folders_to_ignore
-                ):
+                # print("outside for loop", file_path)
+                if not any(file_path.startswith(folder) for folder in dirs_to_ignore):
                     zip_file.write(file_path, file_path)
                     print(file_path)
+
+    print("Resources are collected")
 
 
 def unzip_content(src_path, dst_path):

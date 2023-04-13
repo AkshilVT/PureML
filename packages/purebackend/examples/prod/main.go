@@ -35,6 +35,7 @@ func main() {
 			AdminAuthToken: settings.TokenConfig{
 				Secret: os.Getenv("PURE_ADMIN_AUTH_TOKEN_SECRET"),
 			},
+			APITokenSecretKey: os.Getenv("PURE_API_TOKEN_SECRET_KEY"),
 			MailService: settings.MailServiceConfig{
 				Enabled:  true,
 				Host:     os.Getenv("PURE_MAIL_HOST"),

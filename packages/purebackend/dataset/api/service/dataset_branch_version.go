@@ -201,6 +201,10 @@ func (api *Api) RegisterDataset(request *models.Request) *models.Response {
 			return errresp
 		}
 		datasetSourceType = datasetSourceSecrets.SourceType
+		// TODO: not sure what should be the best way and best place to do this
+		if datasetSourceType == "PUREML-STORAGE" {
+			datasetSourceSecrets.SourceType = "R2"
+		}
 	} else {
 		datasetSourceType = "LOCAL"
 		datasetSourceSecrets.SourceType = "LOCAL"

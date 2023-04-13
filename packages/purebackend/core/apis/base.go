@@ -26,6 +26,7 @@ func InitApi(app core.App) (*echo.Echo, error) {
 	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(authmiddlewares.AuthenticateJWT(app))
+	e.Use(authmiddlewares.AuthenticateAPI(app))
 
 	// bindStaticUI(e)
 

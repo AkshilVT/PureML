@@ -10,7 +10,7 @@ body {
 }
 
 .letterSpaced {
-  letter-spacing: 0.1rem;
+  letter-spacing: 1px;
 }
 
 /* ################ Scrollbar ################ */

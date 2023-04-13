@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/PureMLHQ/PureML/packages/purebackend/core/tools/security"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 	uuid "github.com/satori/go.uuid"
@@ -121,12 +120,4 @@ func GetAdminDetails() map[string]interface{} {
 func HasAdminAccess(email string) bool {
 	_, ok := adminAccess[email]
 	return ok
-}
-
-func TokenSigningSecret() []byte {
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = security.RandomString(50)
-	}
-	return []byte(jwtSecret)
 }

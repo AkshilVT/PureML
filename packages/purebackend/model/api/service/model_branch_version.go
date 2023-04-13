@@ -198,6 +198,10 @@ func (api *Api) RegisterModel(request *models.Request) *models.Response {
 			return errresp
 		}
 		modelSourceType = modelSourceSecrets.SourceType
+		// TODO: not sure what should be the best way and best place to do this
+		if modelSourceType == "PUREML-STORAGE" {
+			modelSourceSecrets.SourceType = "R2"
+		}
 	} else {
 		modelSourceType = "LOCAL"
 		modelSourceSecrets.SourceType = "LOCAL"

@@ -25,7 +25,30 @@ def get_token():
         # print(token)
         return token
     else:
-        print(f"[bold red]Authentication token doesnot exist! Please login")
+        print(f"[bold red]Authentication token does not exist! Please login")
+
+        return
+
+
+def delete_token():
+    """It checks if the token exists in the user's home directory. If it does, it deletes the token. If it
+    doesn't, it returns None
+
+    Returns
+    -------
+        The token is being returned.
+    """
+    path = path_schema.PATH_USER_TOKEN
+    # path = os.path.expanduser(path)
+
+    if os.path.exists(path):
+        os.remove(path)
+        print(f"[bold green]Authentication token deleted!")
+
+        # print(token)
+        return
+    else:
+        print(f"[bold red]Authentication token does not exist! Please login")
 
         return
 
@@ -55,7 +78,7 @@ def get_org_id():
         # print(org_id)
         return org_id
     else:
-        print(f"[bold red]Organization token doesnot exist! Please login")
+        print(f"[bold red]Organization token does not exist! Please login")
 
         return
 

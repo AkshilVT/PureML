@@ -11,6 +11,7 @@ type Settings struct {
 	Search SearchConfig `form:"search" json:"search"`
 
 	AdminAuthToken              TokenConfig       `form:"adminAuthToken" json:"adminAuthToken"`
+	APITokenSecretKey           string			  `form:"apiTokenSecretKey" json:"apiTokenSecretKey"`
 	MailVerifificationAuthToken TokenConfig       `form:"mailVerifificationAuthToken" json:"mailVerifificationAuthToken"`
 	PasswordResetAuthToken      TokenConfig       `form:"passwordResetAuthToken" json:"passwordResetAuthToken"`
 	MailService                 MailServiceConfig `form:"mailService" json:"mailService"`
@@ -25,6 +26,7 @@ func New() *Settings {
 			Secret:   security.RandomString(50),
 			Duration: 1209600, // 14 days,
 		},
+		APITokenSecretKey: security.RandomString(50),
 		MailVerifificationAuthToken: TokenConfig{
 			Secret:   security.RandomString(50),
 			Duration: 86400, // 1 day

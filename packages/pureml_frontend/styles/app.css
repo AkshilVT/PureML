@@ -242,7 +242,7 @@ input[type="text"]:focus,
 }
 
 .letterSpaced {
-  letter-spacing: 0.1rem;
+  letter-spacing: 1px;
 }
 
 .landingpg-font div,

@@ -3,11 +3,45 @@ from .singleton import Singleton_BaseModel
 import typing
 import os
 
+from pathlib import Path
+from pureml.cli.puremlconfig import PureMLConfigYML
+
+
+project_path = Path.cwd()
+if Path.exists(project_path / "puremlconfig.yml"):
+    puremlconfig = PureMLConfigYML(project_path / "puremlconfig.yml")
+else:
+    puremlconfig = None
+
+
+def get_backend_base_url(backend_url: str = None):
+    if backend_url is not None and backend_url != "":
+        # override backend url (command specific option)
+        return backend_url
+    if puremlconfig is not None:
+        # user configured backend url (self-hosted or custom pureml backend instance)
+        backend_url = puremlconfig.data["backend_url"] if "backend_url" in puremlconfig.data else "https://pureml-development.up.railway.app/api/"
+    else:
+        # default backend url (production cloud backend)
+        backend_url = "https://pureml-development.up.railway.app/api/"
+    return backend_url
+
+def get_frontend_base_url(frontend_url: str = None):
+    if frontend_url is not None and frontend_url != "":
+        # override frontend url (command specific option)
+        return frontend_url
+    if puremlconfig is not None:
+        # user configured frontend url (self-hosted or custom pureml frontend instance)
+        frontend_url = puremlconfig.data["frontend_url"] if "frontend_url" in puremlconfig.data else "https://pureml.com/"
+    else:
+        # default frontend url (production cloud frontend)
+        frontend_url = "https://pureml.com/"
+    return frontend_url
 
 class BackendSchema(Singleton_BaseModel):
 
-    BASE_URL: str = "https://pureml-development.up.railway.app/api/"
-    FRONTEND_BASE_URL: str = "https://pureml.com/"
+    BASE_URL: str = get_backend_base_url()
+    FRONTEND_BASE_URL: str = get_frontend_base_url()
     INTEGRATIONS: dict = {
         "s3": {
             "name": "AWS S3 Object Storage",

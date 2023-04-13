@@ -8,7 +8,8 @@ import typer
 from rich import print
 from rich.console import Console
 from rich.table import Table
-from pureml.cli.auth import auth_validate
+from pureml.schema.backend import get_backend_base_url
+from pureml.cli.puremlconfig import PureMLConfigYML
 from pureml.components import get_org_id, get_token
 from pureml.schema.backend import BackendSchema
 from pureml.schema.paths import PathSchema
@@ -33,13 +34,15 @@ def callback():
 
 
 @app.command()
-def add():
+def add(backend_url: str = typer.Option("", "--backend-url", "-b", help="Backend URL for self-hosted or custom pureml backend instance")):
     """
     Add a new integration and it's secrets
 
     Usage:
     pureml secrets add
     """
+    backend_base_url = get_backend_base_url(backend_url)
+
     # Show all integrations
     print()
     console = Console()
@@ -101,7 +104,7 @@ def add():
         }
         url_path = f"org/{org_id}/secret/r2/connect"
 
-    url = urljoin(backend_schema.BASE_URL, url_path)
+    url = urljoin(backend_base_url, url_path)
 
     headers = {
         "accept": "application/json",
@@ -118,18 +121,20 @@ def add():
 
 
 @app.command()
-def all():
+def all(backend_url: str = typer.Option("", "--backend-url", "-b", help="Backend URL for self-hosted or custom pureml backend instance")):
     """
     Get all secret names for the organization
 
     Usage:
     pureml secrets all
     """
+    backend_base_url = get_backend_base_url(backend_url)
+
     print()
     access_token = get_token()
     org_id = get_org_id()
     url_path = f"org/{org_id}/secret"
-    url = urljoin(backend_schema.BASE_URL, url_path)
+    url = urljoin(backend_base_url, url_path)
 
     headers = {
         "accept": "application/json",
@@ -156,18 +161,20 @@ def all():
 
 
 @app.command()
-def show(secret_name: str = typer.Argument(..., case_sensitive=True)):
+def show(secret_name: str = typer.Argument(..., case_sensitive=True), backend_url: str = typer.Option("", "--backend-url", "-b", help="Backend URL for self-hosted or custom pureml backend instance")):
     """
     Shows the secrets under given secret name
 
     Usage:
     pureml secrets show "secret_name"
     """
+    backend_base_url = get_backend_base_url(backend_url)
+    
     print()
     access_token = get_token()
     org_id = get_org_id()
     url_path = f"org/{org_id}/secret/{secret_name}"
-    url = urljoin(backend_schema.BASE_URL, url_path)
+    url = urljoin(backend_base_url, url_path)
 
     headers = {
         "accept": "application/json",
@@ -199,13 +206,15 @@ def show(secret_name: str = typer.Argument(..., case_sensitive=True)):
 
 
 @app.command()
-def delete(secret_name: str = typer.Argument(..., case_sensitive=True)):
+def delete(secret_name: str = typer.Argument(..., case_sensitive=True), backend_url: str = typer.Option("", "--backend-url", "-b", help="Backend URL for self-hosted or custom pureml backend instance")):
     """
     Delete secrets using key
 
     Usage:
     purecli secrets delete "secret_name"
     """
+    backend_base_url = get_backend_base_url(backend_url)
+
     # Ask for confirmation
     print()
     confirm = typer.confirm(
@@ -218,7 +227,7 @@ def delete(secret_name: str = typer.Argument(..., case_sensitive=True)):
     access_token = get_token()
     org_id = get_org_id()
     url_path = f"org/{org_id}/secret/{secret_name}"
-    url = urljoin(backend_schema.BASE_URL, url_path)
+    url = urljoin(backend_base_url, url_path)
 
     headers = {
         "accept": "application/json",

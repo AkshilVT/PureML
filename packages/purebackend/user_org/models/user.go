@@ -86,11 +86,13 @@ type UserProfileResponse struct {
 	Avatar           string    `json:"avatar"`
 	NumberOfModels   int64     `json:"number_of_models"`
 	NumberOfDatasets int64     `json:"number_of_datasets"`
+
+	Orgs []UserOrganizationsResponse `json:"orgs"`
 }
 
 type UserOrganizationsResponse struct {
 	Org  OrganizationHandleResponse `json:"org"`
-	Role string                                   `json:"role"`
+	Role string                     `json:"role"`
 }
 
 type UserOrganizationsRoleResponse struct {
